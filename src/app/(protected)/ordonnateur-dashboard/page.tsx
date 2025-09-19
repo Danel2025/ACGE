@@ -10,6 +10,7 @@ import {
   TableLoadingSkeleton, 
   ActionLoadingState, 
   ContextualLoading,
+  ButtonLoading,
   useLoadingStates 
 } from '@/components/ui/loading-states'
 import { DossierContentModal } from '@/components/ui/dossier-content-modal'
@@ -603,8 +604,15 @@ function OrdonnateurDashboardContent() {
             disabled={isLoadingDossiers}
             className="w-full sm:w-auto h-8"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoadingDossiers ? 'animate-spin' : ''}`} />
-            {isLoadingDossiers ? 'Chargement...' : 'Rafraîchir'}
+            <ButtonLoading
+              isLoading={isLoadingDossiers}
+              loadingText="Chargement..."
+              variant="refresh"
+              size="sm"
+              color="primary"
+            >
+              Rafraîchir
+            </ButtonLoading>
           </Button>
         }
       />

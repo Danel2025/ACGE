@@ -4,6 +4,7 @@ import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useMounted } from '@/hooks/use-mounted'
+import { LoadingState } from '@/components/ui/loading-states'
 
 export default function ProtectedLayout({
   children,
@@ -25,7 +26,14 @@ export default function ProtectedLayout({
   if (!isMounted || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingState
+          isLoading={true}
+          message="Chargement..."
+          variant="spinner"
+          size="lg"
+          color="primary"
+          showText={true}
+        />
       </div>
     )
   }

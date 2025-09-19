@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
+import { ButtonLoading } from '@/components/ui/loading-states'
 import {
   Form,
   FormControl,
@@ -510,10 +511,15 @@ export function UserForm({
               className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                <ButtonLoading
+                  isLoading={true}
+                  loadingText={isEditing ? 'Mise à jour...' : 'Création...'}
+                  variant="save"
+                  size="sm"
+                  color="primary"
+                >
                   {isEditing ? 'Mise à jour...' : 'Création...'}
-                </div>
+                </ButtonLoading>
               ) : (
                 isEditing ? 'Mettre à jour' : 'Créer l\'utilisateur'
               )}

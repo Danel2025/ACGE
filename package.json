@@ -15,7 +15,13 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f postgres",
     "build:prod": "NODE_ENV=production next build",
-    "start:prod": "NODE_ENV=production next start -p $PORT"
+    "start:prod": "NODE_ENV=production next start -p $PORT",
+    "migrate:prepare": "node scripts/migration/migrate-to-new-account.js",
+    "migrate:validate": "node scripts/migration/validate-migration.js",
+    "optimize:pre-migration": "node scripts/migration/optimize-before-migration.js",
+    "clean:build": "rm -rf .next out",
+    "clean:cache": "rm -rf .turbo node_modules/.cache",
+    "fresh:install": "rm -rf node_modules package-lock.json && npm install"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.10.0",
@@ -86,5 +92,26 @@
     "tsx": "^4.0.0",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danelnexon01/ACGE.git"
+  },
+  "keywords": [
+    "acge",
+    "gabon",
+    "comptabilite",
+    "nextjs",
+    "supabase",
+    "vercel"
+  ],
+  "author": {
+    "name": "danelnexon01",
+    "email": "danelnexon01@icloud.com"
+  },
+  "license": "MIT"
 }

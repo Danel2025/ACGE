@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CompactPageLayout, PageHeader, CompactStats, ContentSection, EmptyState } from '@/components/shared/compact-page-layout'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingState } from '@/components/ui/loading-states'
 import { useRouter } from 'next/navigation'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { useDashboardData } from '@/hooks/use-dashboard-data'
@@ -72,8 +73,14 @@ export default function DashboardPage() {
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-sm text-muted-foreground">Redirection vers votre interface...</p>
+            <LoadingState
+              isLoading={true}
+              message="Redirection vers votre interface..."
+              variant="spinner"
+              size="lg"
+              color="primary"
+              showText={true}
+            />
           </div>
         </div>
       </MainLayout>

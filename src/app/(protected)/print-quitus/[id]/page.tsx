@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { QuitusDisplay } from '@/components/ac/quitus-display'
+import { LoadingState } from '@/components/ui/loading-states'
 
 export default function PrintQuitusPage() {
   const params = useParams()
@@ -53,8 +54,14 @@ export default function PrintQuitusPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Génération du quitus...</p>
+          <LoadingState
+            isLoading={true}
+            message="Génération du quitus..."
+            variant="spinner"
+            size="xl"
+            color="primary"
+            showText={true}
+          />
         </div>
       </div>
     )

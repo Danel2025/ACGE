@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { ButtonLoading } from '@/components/ui/loading-states'
 import { AlertTriangle, Trash2 } from 'lucide-react'
 
 interface DeleteConfirmationModalProps {
@@ -102,10 +103,15 @@ export function DeleteConfirmationModal({
             className="flex-1 sm:flex-none"
           >
             {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              <ButtonLoading
+                isLoading={true}
+                loadingText="Suppression..."
+                variant="delete"
+                size="sm"
+                color="white"
+              >
                 Suppression...
-              </>
+              </ButtonLoading>
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />

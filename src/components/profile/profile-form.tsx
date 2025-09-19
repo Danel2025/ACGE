@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { ButtonLoading } from '@/components/ui/loading-states'
 import {
   Form,
   FormControl,
@@ -473,10 +474,15 @@ export function ProfileForm({
               className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                <ButtonLoading
+                  isLoading={true}
+                  loadingText="Sauvegarde..."
+                  variant="save"
+                  size="sm"
+                  color="primary"
+                >
                   Sauvegarde...
-                </div>
+                </ButtonLoading>
               ) : (
                 'Sauvegarder les modifications'
               )}

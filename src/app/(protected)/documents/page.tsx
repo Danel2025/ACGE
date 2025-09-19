@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 // import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingState } from '@/components/ui/loading-states'
 import {
   Table,
   TableBody,
@@ -443,8 +444,14 @@ export default function DocumentsPage() {
     return (
       <CompactPageLayout>
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2">Chargement des fichiers...</p>
+          <LoadingState
+            isLoading={true}
+            message="Chargement des fichiers..."
+            variant="spinner"
+            size="lg"
+            color="primary"
+            showText={true}
+          />
         </div>
       </CompactPageLayout>
     )

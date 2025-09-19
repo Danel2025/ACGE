@@ -6,6 +6,7 @@ import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/main-layout'
+import { LoadingState } from '@/components/ui/loading-states'
 import { XCircle, ArrowLeft } from 'lucide-react'
 import { Role } from '@/types'
 
@@ -42,8 +43,14 @@ export function RoleGuard({
       <MainLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-sm text-muted-foreground">Chargement...</p>
+            <LoadingState
+              isLoading={true}
+              message="Chargement..."
+              variant="spinner"
+              size="lg"
+              color="primary"
+              showText={true}
+            />
           </div>
         </div>
       </MainLayout>

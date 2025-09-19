@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingState } from '@/components/ui/loading-states'
 import {
   Select,
   SelectContent,
@@ -277,8 +278,14 @@ function UsersPageContent() {
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-2">Chargement...</p>
+                <LoadingState
+                  isLoading={true}
+                  message="Chargement..."
+                  variant="spinner"
+                  size="lg"
+                  color="primary"
+                  showText={true}
+                />
               </div>
             ) : (
               <Table>

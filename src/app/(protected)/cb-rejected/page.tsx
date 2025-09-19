@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ButtonLoading } from '@/components/ui/loading-states'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -1029,10 +1030,15 @@ function CBRejectedContent() {
                 className="bg-red-600 hover:bg-red-700"
               >
                 {isDeleting ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <ButtonLoading
+                    isLoading={true}
+                    loadingText="Suppression..."
+                    variant="delete"
+                    size="sm"
+                    color="destructive"
+                  >
                     Suppression...
-                  </>
+                  </ButtonLoading>
                 ) : (
                   <>
                     <Trash2 className="mr-2 h-4 w-4" />
@@ -1095,10 +1101,15 @@ function CBRejectedContent() {
                 className="bg-red-600 hover:bg-red-700"
               >
                 {isBulkDeleting ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <ButtonLoading
+                    isLoading={true}
+                    loadingText="Suppression..."
+                    variant="delete"
+                    size="sm"
+                    color="destructive"
+                  >
                     Suppression...
-                  </>
+                  </ButtonLoading>
                 ) : (
                   <>
                     <Trash2 className="mr-2 h-4 w-4" />

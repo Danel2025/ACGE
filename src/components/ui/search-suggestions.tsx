@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { LoadingState } from '@/components/ui/loading-states'
 
 export interface SearchSuggestion {
   id: string
@@ -165,7 +166,13 @@ export function SearchSuggestions({
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <LoadingState
+              isLoading={true}
+              variant="spinner"
+              size="sm"
+              color="primary"
+              showText={false}
+            />
           </div>
         )}
       </div>

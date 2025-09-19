@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useMounted } from '@/hooks/use-mounted'
 import { redirectByRole } from '@/lib/role-redirect'
+import { LoadingState } from '@/components/ui/loading-states'
 
 export default function HomePage() {
   const { user, isLoading } = useSupabaseAuth()
@@ -27,8 +28,14 @@ export default function HomePage() {
   if (!isMounted || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p className="ml-2 text-sm text-gray-600">Chargement...</p>
+        <LoadingState
+          isLoading={true}
+          message="Chargement..."
+          variant="spinner"
+          size="lg"
+          color="primary"
+          showText={true}
+        />
       </div>
     )
   }

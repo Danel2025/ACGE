@@ -12,15 +12,20 @@ import {
   Clock,
   FileText,
   Database,
-  Upload
+  Upload,
+  Trash2,
+  Save,
+  LogIn
 } from 'lucide-react'
 
 interface LoadingStateProps {
   isLoading: boolean
   message?: string
   progress?: number
-  variant?: 'skeleton' | 'spinner' | 'progress' | 'pulse' | 'dots'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: 'skeleton' | 'spinner' | 'progress' | 'pulse' | 'dots' | 'refresh' | 'delete' | 'save' | 'login'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  color?: 'primary' | 'white' | 'destructive' | 'muted'
+  showText?: boolean
   className?: string
 }
 
@@ -30,6 +35,8 @@ export function LoadingState({
   progress,
   variant = 'spinner',
   size = 'md',
+  color = 'primary',
+  showText = true,
   className = ''
 }: LoadingStateProps) {
   if (!isLoading) return null
@@ -37,16 +44,28 @@ export function LoadingState({
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
-    lg: 'h-8 w-8'
+    lg: 'h-8 w-8',
+    xl: 'h-12 w-12'
   }
 
   const textSizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-base',
+    xl: 'text-lg'
+  }
+
+  const colorClasses = {
+    primary: 'text-primary',
+    white: 'text-white',
+    destructive: 'text-destructive',
+    muted: 'text-muted-foreground'
   }
 
   const renderLoadingContent = () => {
+    const iconClass = `${sizeClasses[size]} animate-spin ${colorClasses[color]}`
+    const textClass = `${textSizeClasses[size]} font-medium ${colorClasses[color]}`
+
     switch (variant) {
       case 'skeleton':
         return (
@@ -61,8 +80,8 @@ export function LoadingState({
         return (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Loader2 className={`${sizeClasses[size]} animate-spin`} />
-              <span className={`${textSizeClasses[size]} font-medium`}>{message}</span>
+              <Loader2 className={iconClass} />
+              {showText && <span className={textClass}>{message}</span>}
             </div>
             {progress !== undefined && (
               <div className="space-y-2">
@@ -83,7 +102,7 @@ export function LoadingState({
               <div className={`${sizeClasses[size]} rounded-full bg-primary/40 animate-pulse absolute inset-0`} 
                    style={{ animationDelay: '0.5s' }}></div>
             </div>
-            <span className={`${textSizeClasses[size]} font-medium`}>{message}</span>
+            {showText && <span className={textClass}>{message}</span>}
           </div>
         )
 
@@ -95,7 +114,39 @@ export function LoadingState({
               <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
               <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
-            <span className={`${textSizeClasses[size]} font-medium`}>{message}</span>
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+      case 'refresh':
+        return (
+          <div className="flex items-center gap-3">
+            <RefreshCw className={iconClass} />
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+      case 'delete':
+        return (
+          <div className="flex items-center gap-3">
+            <Trash2 className={iconClass} />
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+      case 'save':
+        return (
+          <div className="flex items-center gap-3">
+            <Save className={iconClass} />
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+      case 'login':
+        return (
+          <div className="flex items-center gap-3">
+            <LogIn className={iconClass} />
+            {showText && <span className={textClass}>{message}</span>}
           </div>
         )
 
@@ -103,8 +154,8 @@ export function LoadingState({
       default:
         return (
           <div className="flex items-center gap-3">
-            <Loader2 className={`${sizeClasses[size]} animate-spin`} />
-            <span className={`${textSizeClasses[size]} font-medium`}>{message}</span>
+            <Loader2 className={iconClass} />
+            {showText && <span className={textClass}>{message}</span>}
           </div>
         )
     }
@@ -307,6 +358,134 @@ export function ContextualLoading({
         <p className="text-sm font-medium">{message || config.defaultMessage}</p>
         <p className="text-xs text-muted-foreground">{config.description}</p>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Composant de loader pour les boutons
+ */
+interface ButtonLoadingProps {
+  isLoading: boolean
+  loadingText?: string
+  children: React.ReactNode
+  variant?: 'refresh' | 'delete' | 'save' | 'login' | 'spinner'
+  size?: 'sm' | 'md' | 'lg'
+  color?: 'primary' | 'white' | 'destructive' | 'muted'
+  className?: string
+}
+
+export function ButtonLoading({
+  isLoading,
+  loadingText,
+  children,
+  variant = 'spinner',
+  size = 'sm',
+  color = 'primary',
+  className = ''
+}: ButtonLoadingProps) {
+  if (!isLoading) return <>{children}</>
+
+  const sizeClasses = {
+    sm: 'h-4 w-4',
+    md: 'h-5 w-5',
+    lg: 'h-6 w-6'
+  }
+
+  const colorClasses = {
+    primary: 'text-primary',
+    white: 'text-white',
+    destructive: 'text-destructive',
+    muted: 'text-muted-foreground'
+  }
+
+  const getIcon = () => {
+    const iconClass = `${sizeClasses[size]} animate-spin ${colorClasses[color]}`
+    
+    switch (variant) {
+      case 'refresh':
+        return <RefreshCw className={iconClass} />
+      case 'delete':
+        return <Trash2 className={iconClass} />
+      case 'save':
+        return <Save className={iconClass} />
+      case 'login':
+        return <LogIn className={iconClass} />
+      default:
+        return <Loader2 className={iconClass} />
+    }
+  }
+
+  return (
+    <div className={`flex items-center ${className}`}>
+      {getIcon()}
+      {loadingText && (
+        <span className={`ml-2 text-sm ${colorClasses[color]}`}>
+          {loadingText}
+        </span>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Composant de loader pour les pages complètes
+ */
+interface PageLoadingProps {
+  isLoading: boolean
+  message?: string
+  size?: 'md' | 'lg' | 'xl'
+  className?: string
+}
+
+export function PageLoading({
+  isLoading,
+  message = 'Chargement...',
+  size = 'lg',
+  className = ''
+}: PageLoadingProps) {
+  if (!isLoading) return null
+
+  return (
+    <div className={`min-h-screen flex items-center justify-center ${className}`}>
+      <div className="text-center">
+        <LoadingState
+          isLoading={true}
+          message={message}
+          variant="spinner"
+          size={size}
+          showText={true}
+        />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Composant de loader pour les modales
+ */
+interface ModalLoadingProps {
+  isLoading: boolean
+  message?: string
+  className?: string
+}
+
+export function ModalLoading({
+  isLoading,
+  message = 'Chargement...',
+  className = ''
+}: ModalLoadingProps) {
+  if (!isLoading) return null
+
+  return (
+    <div className={`flex items-center justify-center p-8 ${className}`}>
+      <LoadingState
+        isLoading={true}
+        message={message}
+        variant="spinner"
+        size="md"
+        showText={true}
+      />
     </div>
   )
 }

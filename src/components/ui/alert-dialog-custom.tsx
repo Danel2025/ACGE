@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ModalBackdrop } from "@/components/ui/modal-backdrop"
 import { cn } from "@/lib/utils"
 import { AlertTriangle, X } from "lucide-react"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { LoadingState } from "@/components/ui/loading-states"
 
 interface AlertDialogCustomProps {
   open: boolean
@@ -132,10 +132,13 @@ const AlertDialogCustomAction = ({
       disabled={disabled || loading}
     >
       {loading ? (
-        <div className="flex items-center gap-2">
-          <LoadingSpinner size="sm" />
-          <span>{loadingText || children}</span>
-        </div>
+        <LoadingState
+          isLoading={true}
+          message={loadingText || children}
+          variant="spinner"
+          size="sm"
+          showText={true}
+        />
       ) : (
         children
       )}

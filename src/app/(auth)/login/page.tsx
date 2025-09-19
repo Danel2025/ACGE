@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { AlertTriangle, Eye, EyeOff, Mail, Lock, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { ButtonLoading } from '@/components/ui/loading-states'
 import { redirectByRole } from '@/lib/role-redirect'
 import Image from 'next/image'
 
@@ -241,10 +242,15 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground mr-2"></div>
+                    <ButtonLoading
+                      isLoading={true}
+                      loadingText="Connexion en cours..."
+                      variant="login"
+                      size="sm"
+                      color="primary"
+                    >
                       Connexion en cours...
-                    </div>
+                    </ButtonLoading>
                   ) : (
                     <div className="flex items-center justify-center">
                       <span>Se connecter</span>
