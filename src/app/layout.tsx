@@ -44,13 +44,14 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
         
-        {/* Preload des ressources critiques pour optimiser le LCP */}
+        {/* Preload des ressources critiques pour optimiser FCP et LCP */}
         <link
           rel="preload"
           href="/fonts/outfit/OutfitVariableFont_wght1.ttf"
           as="font"
           type="font/ttf"
           crossOrigin="anonymous"
+          fetchPriority="high"
         />
         {/* Preload de l'image critique avec fetchpriority */}
         <link
@@ -60,12 +61,21 @@ export default function RootLayout({
           type="image/svg+xml"
           fetchPriority="high"
         />
+        {/* Preload des CSS critiques pour FCP */}
+        <link
+          rel="preload"
+          href="/_next/static/css/app/layout.css"
+          as="style"
+          fetchPriority="high"
+        />
         {/* DNS prefetch pour les domaines externes */}
         <link rel="dns-prefetch" href="//vitals.vercel-analytics.com" />
         <link rel="dns-prefetch" href="//vercel.live" />
+        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         {/* Preconnect pour les connexions critiques */}
         <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
         <link rel="preconnect" href="https://vercel.live" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="font-outfit">
         <ThemeProvider

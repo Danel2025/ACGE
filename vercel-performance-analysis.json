@@ -1,0 +1,154 @@
+{
+  "timestamp": "2025-09-20T09:03:29.616Z",
+  "vercelStandards": {
+    "LCP": {
+      "good": {
+        "max": 2.5,
+        "score": 90
+      },
+      "needsImprovement": {
+        "max": 4,
+        "score": 50
+      },
+      "poor": {
+        "min": 4,
+        "score": 0
+      }
+    },
+    "FCP": {
+      "good": {
+        "max": 1.8,
+        "score": 90
+      },
+      "needsImprovement": {
+        "max": 3,
+        "score": 50
+      },
+      "poor": {
+        "min": 3,
+        "score": 0
+      }
+    },
+    "CLS": {
+      "good": {
+        "max": 0.1,
+        "score": 90
+      },
+      "needsImprovement": {
+        "max": 0.25,
+        "score": 50
+      },
+      "poor": {
+        "min": 0.25,
+        "score": 0
+      }
+    },
+    "INP": {
+      "good": {
+        "max": 200,
+        "score": 90
+      },
+      "needsImprovement": {
+        "max": 500,
+        "score": 50
+      },
+      "poor": {
+        "min": 500,
+        "score": 0
+      }
+    },
+    "TTFB": {
+      "good": {
+        "max": 0.8,
+        "score": 90
+      },
+      "needsImprovement": {
+        "max": 1.8,
+        "score": 50
+      },
+      "poor": {
+        "min": 1.8,
+        "score": 0
+      }
+    }
+  },
+  "currentMetrics": {
+    "LCP": 7.32,
+    "FCP": 2.67,
+    "CLS": 0.03,
+    "INP": 72,
+    "TTFB": 0.63
+  },
+  "analysis": {
+    "LCP": {
+      "score": 0,
+      "category": "Poor",
+      "color": "red",
+      "message": "Critique! Score 0/100"
+    },
+    "FCP": {
+      "score": 50,
+      "category": "Needs Improvement",
+      "color": "orange",
+      "message": "Amélioration nécessaire. Score 50/100"
+    },
+    "CLS": {
+      "score": 90,
+      "category": "Good",
+      "color": "green",
+      "message": "Excellent! Score 90/100"
+    },
+    "INP": {
+      "score": 90,
+      "category": "Good",
+      "color": "green",
+      "message": "Excellent! Score 90/100"
+    },
+    "TTFB": {
+      "score": 90,
+      "category": "Good",
+      "color": "green",
+      "message": "Excellent! Score 90/100"
+    }
+  },
+  "optimizationTargets": {
+    "LCP": {
+      "target": 2,
+      "improvement": "72.7"
+    },
+    "FCP": {
+      "target": 1.5,
+      "improvement": "43.8"
+    },
+    "CLS": {
+      "target": 0.05,
+      "improvement": "Maintenu"
+    },
+    "INP": {
+      "target": 100,
+      "improvement": "-38.9"
+    },
+    "TTFB": {
+      "target": 0.5,
+      "improvement": "20.6"
+    }
+  },
+  "globalScore": {
+    "current": 64,
+    "target": 90,
+    "improvement": 26
+  },
+  "recommendations": {
+    "critical": [
+      "LCP"
+    ],
+    "important": [
+      "FCP"
+    ],
+    "monitoring": [
+      "CLS",
+      "INP",
+      "TTFB"
+    ]
+  }
+}

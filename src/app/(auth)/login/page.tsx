@@ -10,6 +10,7 @@ import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { redirectByRole } from '@/lib/role-redirect'
 import Image from 'next/image'
 import { WebVitals } from '@/components/analytics/web-vitals'
+import { LCPOptimizer, LCPImage } from '@/components/optimization/lcp-optimizer'
 
 // Lazy loading des composants non critiques
 const ThemeToggle = lazy(() => import('@/components/ui/theme-toggle').then(mod => ({ default: mod.ThemeToggle })))
@@ -233,7 +234,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-background to-muted/20 dark:from-background dark:to-muted/10">
+    <LCPOptimizer>
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-background to-muted/20 dark:from-background dark:to-muted/10">
       {/* Bouton de thème en haut à droite - Lazy loaded */}
       <div className="absolute top-4 right-4 z-30">
         <Suspense fallback={<div className="w-9 h-9" />}>
@@ -271,15 +273,13 @@ export default function LoginPage() {
           {/* Logo et titre */}
           <div className="text-center mb-8 sm:mb-12">
             <div className="mb-6 sm:mb-8 group relative">
-              <Image
+              <LCPImage
                 src="/logo-tresor-public.svg"
                 alt="Logo Trésor Public Gabon"
                 width={120}
                 height={120}
                 className="mx-auto transition-all duration-500 group-hover:scale-110 drop-shadow-lg sm:w-[150px] sm:h-[150px]"
-                priority
-                loading="eager"
-                sizes="(max-width: 640px) 120px, 150px"
+                priority={true}
               />
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">ACGE</h1>
@@ -336,6 +336,7 @@ export default function LoginPage() {
           animation: spin 1s linear infinite;
         }
       `}</style>
-    </div>
+      </div>
+    </LCPOptimizer>
   )
 }
