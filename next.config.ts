@@ -36,7 +36,12 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
     // Optimiser les preloads
     optimizeCss: true,
+    // Optimisations de performance
+    optimizeServerReact: true,
   },
+  
+  // Packages externes pour le serveur
+  serverExternalPackages: ['@supabase/supabase-js'],
   
   // Configuration des headers pour optimiser les preloads
   async headers() {
@@ -63,6 +68,21 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
+          },
+          // Headers de performance
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+      // Headers spécifiques pour les images
+      {
+        source: '/logo-tresor-public.svg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
           }
         ],
       },

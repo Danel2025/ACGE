@@ -44,6 +44,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
         
+        {/* Preload des polices critiques uniquement */}
         <link
           rel="preload"
           href="/fonts/outfit/OutfitVariableFont_wght1.ttf"
@@ -51,19 +52,12 @@ export default function RootLayout({
           type="font/ttf"
           crossOrigin="anonymous"
         />
+        {/* Preload de l'image critique */}
         <link
           rel="preload"
-          href="/fonts/outfit/OutfitRegular.ttf"
-          as="font"
-          type="font/ttf"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/freemono/FreeMono.ttf"
-          as="font"
-          type="font/ttf"
-          crossOrigin="anonymous"
+          href="/logo-tresor-public.svg"
+          as="image"
+          type="image/svg+xml"
         />
       </head>
       <body className="font-outfit">

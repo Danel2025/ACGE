@@ -21,7 +21,10 @@
     "optimize:pre-migration": "node scripts/migration/optimize-before-migration.js",
     "clean:build": "rm -rf .next out",
     "clean:cache": "rm -rf .turbo node_modules/.cache",
-    "fresh:install": "rm -rf node_modules package-lock.json && npm install"
+    "fresh:install": "rm -rf node_modules package-lock.json && npm install",
+    "optimize:images": "node scripts/optimize-images.js",
+    "analyze:bundle": "ANALYZE=true npm run build",
+    "perf:audit": "npm run build && npm run start & sleep 5 && curl -s http://localhost:3000/login | head -20"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.10.0",

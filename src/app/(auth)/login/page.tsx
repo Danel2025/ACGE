@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertTriangle, Eye, EyeOff, Mail, Lock, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { ButtonLoading } from '@/components/ui/loading-states'
 import { redirectByRole } from '@/lib/role-redirect'
 import Image from 'next/image'
+
+// Lazy loading des composants non critiques
+const ThemeToggle = lazy(() => import('@/components/ui/theme-toggle').then(mod => ({ default: mod.ThemeToggle })))
+const ButtonLoading = lazy(() => import('@/components/ui/loading-states').then(mod => ({ default: mod.ButtonLoading })))
 
 export default function LoginPage() {
   const router = useRouter()
@@ -25,15 +27,23 @@ export default function LoginPage() {
   const [capsLockOn, setCapsLockOn] = useState(false)
   const [emailValid, setEmailValid] = useState<boolean | null>(null)
 
-  // Validation email en temps réel
-  useEffect(() => {
-    if (formData.email === '') {
+  // Validation email optimisée avec debounce
+  const validateEmail = useCallback((email: string) => {
+    if (email === '') {
       setEmailValid(null)
       return
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    setEmailValid(emailRegex.test(formData.email))
-  }, [formData.email])
+    setEmailValid(emailRegex.test(email))
+  }, [])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      validateEmail(formData.email)
+    }, 300) // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId)
+  }, [formData.email, validateEmail])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,9 +98,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-background to-muted/20 dark:from-background dark:to-muted/10">
-      {/* Bouton de thème en haut à droite */}
+      {/* Bouton de thème en haut à droite - Lazy loaded */}
       <div className="absolute top-4 right-4 z-30">
-        <ThemeToggle />
+        <Suspense fallback={<div className="w-9 h-9" />}>
+          <ThemeToggle />
+        </Suspense>
       </div>
 
       {/* Arrière-plan avec logo en blur et particules subtiles */}
@@ -104,6 +116,8 @@ export default function LoginPage() {
               height={1000}
               className="object-contain opacity-10 dark:opacity-5"
               priority
+              loading="eager"
+              sizes="100vw"
             />
           </div>
           {/* Effet de blur prononcé sur le backdrop */}
@@ -127,6 +141,9 @@ export default function LoginPage() {
                 width={120}
                 height={120}
                 className="mx-auto transition-all duration-500 group-hover:scale-110 drop-shadow-lg sm:w-[150px] sm:h-[150px]"
+                priority
+                loading="eager"
+                sizes="(max-width: 640px) 120px, 150px"
               />
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">ACGE</h1>
@@ -240,15 +257,17 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <ButtonLoading
-                      isLoading={true}
-                      loadingText="Connexion en cours..."
-                      variant="login"
-                      size="sm"
-                      color="primary"
-                    >
-                      Connexion en cours...
-                    </ButtonLoading>
+                    <Suspense fallback={<div className="flex items-center justify-center">Connexion...</div>}>
+                      <ButtonLoading
+                        isLoading={true}
+                        loadingText="Connexion en cours..."
+                        variant="login"
+                        size="sm"
+                        color="primary"
+                      >
+                        Connexion en cours...
+                      </ButtonLoading>
+                    </Suspense>
                   ) : (
                     <div className="flex items-center justify-center">
                       <span>Se connecter</span>
