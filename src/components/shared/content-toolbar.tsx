@@ -91,14 +91,14 @@ export function ContentToolbar<T = string>({
         )}
       </div>
 
-      {/* Tri et Mode d'affichage */}
-      <div className="flex items-center gap-2">
-        {/* Tri */}
+      {/* Tri et Mode d'affichage - Responsive */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+        {/* Tri - Responsive width */}
         <Select
           value={sortField}
           onValueChange={(v) => onSortFieldChange(v)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Trier par" />
           </SelectTrigger>
           <SelectContent>
@@ -110,29 +110,37 @@ export function ContentToolbar<T = string>({
           </SelectContent>
         </Select>
 
-        {/* Ordre de tri */}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label={sortOrder === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'}
-          onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
-        >
-          {sortOrder === 'asc' ? (
-            <SortAsc className="h-4 w-4" />
-          ) : (
-            <SortDesc className="h-4 w-4" />
-          )}
-        </Button>
-
-
-        {/* Filtres additionnels */}
-        {showFilters && onOpenFilters && (
-          <Button type="button" variant="outline" onClick={onOpenFilters}>
-            <Filter className="mr-2 h-4 w-4" />
-            Filtres
+        <div className="flex items-center gap-2 justify-between sm:justify-start">
+          {/* Ordre de tri */}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label={sortOrder === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'}
+            onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="touch-target flex-shrink-0"
+          >
+            {sortOrder === 'asc' ? (
+              <SortAsc className="h-4 w-4" />
+            ) : (
+              <SortDesc className="h-4 w-4" />
+            )}
           </Button>
-        )}
+
+          {/* Filtres additionnels */}
+          {showFilters && onOpenFilters && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onOpenFilters}
+              className="flex-shrink-0"
+            >
+              <Filter className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Filtres</span>
+              <span className="sm:hidden">Filtres</span>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

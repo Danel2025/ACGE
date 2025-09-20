@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 /* Box-sizing border-box pour tous les éléments */
 *, *::before, *::after {
@@ -495,6 +494,75 @@
   /* Amélioration des focus pour accessibilité */
   .focus-visible-enhanced:focus-visible {
     @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Amélioration de l'UX mobile - breakpoints personnalisés */
+  @media (max-width: 640px) {
+    /* Réduction des paddings sur mobile */
+    .mobile-compact {
+      @apply px-3 py-2;
+    }
+    
+    /* Taille de texte plus grande sur mobile pour la lisibilité */
+    .mobile-text {
+      @apply text-base;
+    }
+    
+    /* Espacement réduit entre les éléments sur mobile */
+    .mobile-spacing {
+      @apply space-y-3;
+    }
+    
+    /* Boutons pleine largeur sur mobile */
+    .mobile-full-width {
+      @apply w-full;
+    }
+  }
+
+  /* Amélioration pour les écrans tactiles */
+  @media (hover: none) and (pointer: coarse) {
+    /* Désactiver les effets hover sur tactile */
+    .hover-desktop-only:hover {
+      @apply bg-transparent;
+    }
+    
+    /* Augmenter la taille des targets tactiles */
+    .touch-friendly {
+      @apply min-h-[48px] min-w-[48px];
+    }
+  }
+
+  /* Optimisations pour les très petits écrans (moins de 380px) */
+  @media (max-width: 380px) {
+    .xs-compact {
+      @apply px-2 py-1 text-sm;
+    }
+    
+    .xs-hide {
+      @apply hidden;
+    }
+    
+    .xs-full {
+      @apply w-full;
+    }
+  }
+
+  /* Amélioration de la lisibilité sur mobile */
+  .mobile-readable {
+    @apply text-base leading-relaxed;
+  }
+
+  /* Grilles responsives améliorées */
+  .grid-responsive-1-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+  
+  .grid-responsive-1-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+  
+  .grid-responsive-1-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4;
   }
   /* Utilitaires de couleurs d'icônes */
   .icon-blue-bg { background-color: var(--icon-blue-bg); }

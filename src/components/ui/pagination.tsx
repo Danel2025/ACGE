@@ -21,7 +21,7 @@ const PaginationContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ul
     ref={ref}
-    className={cn("flex flex-row items-center gap-1", className)}
+    className={cn("flex flex-row items-center gap-1 sm:gap-2", className)}
     {...props}
   />
 ))
@@ -49,14 +49,14 @@ const PaginationLink = ({
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-target",
       isActive
         ? "bg-primary text-primary-foreground hover:bg-primary/90"
         : "hover:bg-accent hover:text-accent-foreground",
       size === "default" && "h-10 px-4 py-2",
       size === "sm" && "h-9 rounded-md px-3",
       size === "lg" && "h-11 rounded-md px-8",
-      size === "icon" && "h-10 w-10",
+      size === "icon" && "h-9 w-9 sm:h-10 sm:w-10",
       className
     )}
     {...props}
@@ -75,7 +75,8 @@ const PaginationPrevious = ({
     {...props}
   >
     <ChevronLeft className="h-4 w-4" />
-    <span>Précédent</span>
+    <span className="hidden sm:inline">Précédent</span>
+    <span className="sm:hidden">Préc.</span>
   </PaginationLink>
 )
 PaginationPrevious.displayName = "PaginationPrevious"
@@ -90,7 +91,8 @@ const PaginationNext = ({
     className={cn("gap-1 pr-2.5", className)}
     {...props}
   >
-    <span>Suivant</span>
+    <span className="hidden sm:inline">Suivant</span>
+    <span className="sm:hidden">Suiv.</span>
     <ChevronRight className="h-4 w-4" />
   </PaginationLink>
 )

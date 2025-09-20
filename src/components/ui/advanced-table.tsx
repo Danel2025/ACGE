@@ -168,23 +168,23 @@ export function AdvancedTable<T extends Record<string, any>>({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Actions en lot */}
+      {/* Actions en lot - Responsive */}
       {showBulkActions && bulkActions.length > 0 && (
-        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-muted/50 rounded-lg">
           <span className="text-sm font-medium">
             {currentSelectedRows.length} élément{currentSelectedRows.length > 1 ? 's' : ''} sélectionné{currentSelectedRows.length > 1 ? 's' : ''}
           </span>
-          <div className="flex gap-2 ml-auto">
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
             {bulkActions.map((action, index) => (
               <Button
                 key={index}
                 variant={action.variant || 'outline'}
                 size="sm"
                 onClick={() => action.onClick(currentSelectedRows)}
-                className="h-8"
+                className="h-8 flex-shrink-0"
               >
-                {action.icon && <span className="mr-2">{action.icon}</span>}
-                {action.label}
+                {action.icon && <span className="mr-2 hidden sm:inline">{action.icon}</span>}
+                <span className="truncate">{action.label}</span>
               </Button>
             ))}
             <Button
@@ -197,7 +197,8 @@ export function AdvancedTable<T extends Record<string, any>>({
                   setInternalSelectedRows([])
                 }
               }}
-              className="h-8"
+              className="h-8 flex-shrink-0"
+              aria-label="Désélectionner tout"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -205,9 +206,10 @@ export function AdvancedTable<T extends Record<string, any>>({
         </div>
       )}
 
-      {/* Tableau */}
-      <div className="rounded-md border">
-        <Table>
+      {/* Tableau avec scroll horizontal sur mobile */}
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
           <TableHeader>
             <TableRow>
               {selectable && (
@@ -224,18 +226,18 @@ export function AdvancedTable<T extends Record<string, any>>({
               {columns.map((column) => (
                 <TableHead 
                   key={String(column.key)}
-                  className={`${column.className || ''} ${column.sortable ? 'cursor-pointer hover:bg-muted/50' : ''}`}
-                  style={{ width: column.width }}
+                  className={`${column.className || ''} ${column.sortable ? 'cursor-pointer hover:bg-muted/50' : ''} whitespace-nowrap`}
+                  style={{ width: column.width, minWidth: column.width || '120px' }}
                   onClick={() => column.sortable && handleSort(String(column.key))}
                 >
                   <div className="flex items-center gap-2">
-                    {column.label}
+                    <span className="truncate">{column.label}</span>
                     {column.sortable && getSortIcon(String(column.key))}
                   </div>
                 </TableHead>
               ))}
               {actions.length > 0 && (
-                <TableHead className="w-12">Actions</TableHead>
+                <TableHead className="w-16 min-w-[64px] text-center">Actions</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -261,20 +263,23 @@ export function AdvancedTable<T extends Record<string, any>>({
                   {columns.map((column) => (
                     <TableCell 
                       key={String(column.key)}
-                      className={column.className}
+                      className={`${column.className || ''} max-w-[200px]`}
                     >
-                      {column.render 
-                        ? column.render(row[column.key], row)
-                        : String(row[column.key] || '')
-                      }
+                      <div className="truncate" title={String(row[column.key] || '')}>
+                        {column.render 
+                          ? column.render(row[column.key], row)
+                          : String(row[column.key] || '')
+                        }
+                      </div>
                     </TableCell>
                   ))}
                   {actions.length > 0 && (
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell onClick={(e) => e.stopPropagation()} className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Ouvrir le menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -302,6 +307,7 @@ export function AdvancedTable<T extends Record<string, any>>({
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   )

@@ -428,42 +428,45 @@ export function ModernUploadModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0" showCloseButton={false}>
-        <DialogHeader className="px-4 pt-4 pb-2">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <CloudUpload className="h-5 w-5 text-primary" />
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] p-0" showCloseButton={false}>
+        <DialogHeader className="px-3 sm:px-4 pt-4 pb-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <CloudUpload className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             Upload de fichiers
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Glissez-déposez vos fichiers ou cliquez pour les sélectionner. 
             Maximum {maxFiles} fichiers, {maxSize}MB par fichier.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-4">
+        <div className="px-3 sm:px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="files" className="flex items-center gap-2">
-                <FolderOpen className="h-4 w-4" />
-                Sélection des fichiers
+            <TabsList className="grid w-full grid-cols-3 h-auto">
+              <TabsTrigger value="files" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm">
+                <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Sélection des fichiers</span>
+                <span className="sm:hidden">Fichiers</span>
                 {files.length > 0 && (
-                  <Badge variant="secondary" className="ml-1">
+                  <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                     {files.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="existing" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Fichiers existants
+              <TabsTrigger value="existing" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Fichiers existants</span>
+                <span className="sm:hidden">Existants</span>
                 {selectedExistingFiles.size > 0 && (
-                  <Badge variant="secondary" className="ml-1">
+                  <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                     {selectedExistingFiles.size}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="metadata" className="flex items-center gap-2" disabled={files.length === 0 && selectedExistingFiles.size === 0}>
-                <Tag className="h-4 w-4" />
-                Métadonnées
+              <TabsTrigger value="metadata" className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm" disabled={files.length === 0 && selectedExistingFiles.size === 0}>
+                <Tag className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Métadonnées</span>
+                <span className="sm:hidden">Méta</span>
               </TabsTrigger>
             </TabsList>
 
@@ -526,15 +529,15 @@ export function ModernUploadModal({
                       <ScrollArea className="max-h-[250px]">
                         <div className="space-y-2">
                           {files.filter(file => file != null).map((file) => (
-                            <div key={file.id} className="flex items-center gap-3 p-2 border rounded-lg">
+                            <div key={file.id} className="flex items-center gap-2 sm:gap-3 p-2 border rounded-lg">
                               <div className="flex-shrink-0">
                                 {getFileIcon(file)}
                               </div>
                               
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                                   <p className="font-medium truncate text-sm">{file.name || 'Fichier sans nom'}</p>
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs w-fit">
                                     {formatFileSize(file.size)}
                                   </Badge>
                                 </div>
@@ -783,39 +786,41 @@ export function ModernUploadModal({
           </Tabs>
         </div>
 
-        <div className="px-4 pb-4">
+        <div className="px-3 sm:px-4 pb-4">
           {error && (
             <Alert variant="destructive" className="mb-3">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="text-sm">{error}</AlertDescription>
             </Alert>
           )}
 
           {success && (
             <Alert className="mb-3 border-green-200 bg-green-50">
               <Check className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">{success}</AlertDescription>
+              <AlertDescription className="text-green-800 text-sm">{success}</AlertDescription>
             </Alert>
           )}
 
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={handleClose} disabled={isUploading} className="h-9">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+            <Button variant="outline" onClick={handleClose} disabled={isUploading} className="h-10 order-2 sm:order-1">
               Annuler
             </Button>
             <Button 
               onClick={handleUpload} 
               disabled={(files.length === 0 && selectedExistingFiles.size === 0) || isUploading}
-              className="min-w-[120px] h-9"
+              className="min-w-[120px] h-10 order-1 sm:order-2"
             >
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Traitement...
+                  <span className="hidden sm:inline">Traitement...</span>
+                  <span className="sm:hidden">...</span>
                 </>
               ) : (
                 <>
                   <CloudUpload className="mr-2 h-4 w-4" />
-                  Traiter ({files.length + selectedExistingFiles.size})
+                  <span className="hidden sm:inline">Traiter ({files.length + selectedExistingFiles.size})</span>
+                  <span className="sm:hidden">Traiter</span>
                 </>
               )}
             </Button>
