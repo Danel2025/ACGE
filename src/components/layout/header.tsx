@@ -92,10 +92,6 @@ export function Header({ onOpenMenu }: { onOpenMenu?: () => void }) {
               className="group cursor-pointer transition-all duration-300 hover:scale-105 relative p-0 h-auto"
               aria-label="Retour à l'accueil"
             >
-              {/* Effet glassmorphism derrière le logo */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="glassmorphism-subtle rounded-full w-12 h-12 sm:w-14 sm:h-14 group-hover:glassmorphism transition-all duration-300"></div>
-              </div>
               <Image
                 src="/logo-tresor-public.svg"
                 alt="Trésor Public Gabon"

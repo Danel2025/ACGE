@@ -106,6 +106,8 @@ export default function LoginPage() {
               priority
             />
           </div>
+          {/* Effet de blur prononcé sur le backdrop */}
+          <div className="absolute inset-0 backdrop-blur-md bg-background/10 dark:bg-background/20"></div>
           {/* Particules flottantes très discrètes */}
           <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-muted-foreground/20 dark:bg-muted-foreground/10 rounded-full animate-pulse"></div>
           <div className="absolute top-3/4 right-1/3 w-0.5 h-0.5 bg-muted-foreground/15 dark:bg-muted-foreground/5 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
@@ -119,16 +121,12 @@ export default function LoginPage() {
           {/* Logo et titre */}
           <div className="text-center mb-8 sm:mb-12">
             <div className="mb-6 sm:mb-8 group relative">
-              {/* Effet glassmorphism derrière le logo */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="glassmorphism-subtle rounded-full w-32 h-32 sm:w-40 sm:h-40 group-hover:glassmorphism transition-all duration-500"></div>
-              </div>
               <Image
                 src="/logo-tresor-public.svg"
                 alt="Logo Trésor Public Gabon"
                 width={120}
                 height={120}
-                className="relative z-10 mx-auto transition-all duration-500 group-hover:scale-110 drop-shadow-lg sm:w-[150px] sm:h-[150px]"
+                className="mx-auto transition-all duration-500 group-hover:scale-110 drop-shadow-lg sm:w-[150px] sm:h-[150px]"
               />
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">ACGE</h1>

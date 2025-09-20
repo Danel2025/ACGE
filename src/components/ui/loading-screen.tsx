@@ -35,18 +35,15 @@ export function LoadingScreen({ isLoading, onComplete }: LoadingScreenProps) {
   return (
     <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
       <div className="flex flex-col items-center space-y-6">
-        {/* Logo avec effet glassmorphism */}
-        <div className="relative group">
-          <div className="absolute -inset-4 glassmorphism-subtle rounded-full group-hover:glassmorphism transition-all duration-1000"></div>
-          <div className="relative">
-            <Image
-              src="/logo-tresor-public.svg"
-              alt="Logo Trésor Public"
-              width={100}
-              height={100}
-              className="animate-pulse drop-shadow-lg"
-            />
-          </div>
+        {/* Logo */}
+        <div className="relative">
+          <Image
+            src="/logo-tresor-public.svg"
+            alt="Logo Trésor Public"
+            width={100}
+            height={100}
+            className="animate-pulse drop-shadow-lg"
+          />
         </div>
 
         {/* Animation de points élégante */}
