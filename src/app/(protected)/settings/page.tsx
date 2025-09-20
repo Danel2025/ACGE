@@ -459,14 +459,14 @@ export default function SettingsPage() {
           </Alert>
         )}
 
-        {/* Layout avec sidebar */}
-        <div className="flex gap-8">
-          {/* Sidebar améliorée */}
-          <div className="w-80 flex-shrink-0 " style={{animationDelay: '0.1s'}}>
+        {/* Layout responsive avec sidebar */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Sidebar responsive */}
+          <div className="w-full lg:w-80 lg:flex-shrink-0" style={{animationDelay: '0.1s'}}>
             <Card className="transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Search className="w-5 h-5 text-primary" />
+                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Navigation
                 </CardTitle>
               </CardHeader>
@@ -504,7 +504,7 @@ export default function SettingsPage() {
                       <Button
                         key={section.name}
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start transition-all duration-300 transform hover:scale-[1.02]  ${
+                        className={`w-full justify-start transition-all duration-300 transform hover:scale-[1.02] touch-target ${
                           isActive ? 'bg-primary text-primary-foreground shadow-lg scale-[1.02]' : 'hover:bg-accent hover:shadow-md'
                         } ${!hasResults && searchQuery ? 'opacity-50' : ''}`}
                         style={{animationDelay: `${(index + 1) * 0.1}s`}}
@@ -656,7 +656,7 @@ export default function SettingsPage() {
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2 " style={{animationDelay: '0.2s'}}>
                             <Label htmlFor="currentPassword">Mot de passe actuel</Label>
                             <div className="relative group">
@@ -673,7 +673,7 @@ export default function SettingsPage() {
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="absolute right-1 top-1 h-7 w-7 transition-all duration-300 hover:scale-110"
+                                className="absolute right-1 top-1 h-8 w-8 sm:h-7 sm:w-7 transition-all duration-300 hover:scale-110 touch-target"
                                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                               >
                                 {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -696,7 +696,7 @@ export default function SettingsPage() {
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="absolute right-1 top-1 h-7 w-7 transition-all duration-300 hover:scale-110"
+                                className="absolute right-1 top-1 h-8 w-8 sm:h-7 sm:w-7 transition-all duration-300 hover:scale-110 touch-target"
                                 onClick={() => setShowNewPassword(!showNewPassword)}
                               >
                                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -720,7 +720,7 @@ export default function SettingsPage() {
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="absolute right-1 top-1 h-7 w-7 transition-all duration-300 hover:scale-110"
+                              className="absolute right-1 top-1 h-8 w-8 sm:h-7 sm:w-7 transition-all duration-300 hover:scale-110 touch-target"
                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

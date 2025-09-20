@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 import { useSessionTimeout } from '@/hooks/use-session-timeout'
@@ -53,6 +53,10 @@ export function MainLayout({ children }: MainLayoutProps) {
           side="left" 
           className="w-[280px] max-w-[90vw] p-0 sm:w-[320px]"
         >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Menu de navigation</SheetTitle>
+            <SheetDescription>Menu principal de navigation de l'application</SheetDescription>
+          </SheetHeader>
           <Sidebar className="border-r-0" inSheet />
         </SheetContent>
       </Sheet>

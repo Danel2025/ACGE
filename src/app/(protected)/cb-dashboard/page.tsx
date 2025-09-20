@@ -8,7 +8,17 @@ import { ControleurBudgetaireGuard } from '@/components/auth/role-guard'
 import { checkDossierValidationStatus, ValidationStatus } from '@/lib/validation-utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { 
+  ResponsiveTableWrapper,
+  Table, 
+  TableBody, 
+  TableHead, 
+  TableHeader, 
+  TableRow,
+  ResponsiveTableCell,
+  TableActionButton,
+  TableActionsMenu
+} from '@/components/ui/responsive-table-wrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import {
@@ -598,62 +608,65 @@ function CBDashboardContent() {
               description={documentsError}
             />
           ) : documents.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Catégorie</TableHead>
-                  <TableHead>Taille</TableHead>
-                  <TableHead>Date de création</TableHead>
-                  <TableHead className="w-20">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {documents.map((document) => (
-                  <TableRow key={document.id}>
-                    <TableCell className="font-medium">{document.fileName || document.name}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {document.category || 'Non classé'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {document.fileSize ? `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(document.createdAt).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDocument(document)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Voir
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDownloadDocument(document)}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Télécharger
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditDocument(document)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Modifier
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShareDocument(document)}>
-                            <Share2 className="mr-2 h-4 w-4" />
-                            Partager
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+            <ResponsiveTableWrapper>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Catégorie</TableHead>
+                    <TableHead>Taille</TableHead>
+                    <TableHead>Date de création</TableHead>
+                    <TableHead className="w-16">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {documents.map((document) => (
+                    <TableRow key={document.id}>
+                      <ResponsiveTableCell className="font-medium">
+                        {document.fileName || document.name}
+                      </ResponsiveTableCell>
+                      <ResponsiveTableCell>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {document.category || 'Non classé'}
+                        </span>
+                      </ResponsiveTableCell>
+                      <ResponsiveTableCell>
+                        {document.fileSize ? `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` : 'N/A'}
+                      </ResponsiveTableCell>
+                      <ResponsiveTableCell>
+                        {new Date(document.createdAt).toLocaleDateString('fr-FR')}
+                      </ResponsiveTableCell>
+                      <ResponsiveTableCell>
+                        <TableActionsMenu
+                          actions={[
+                            {
+                              label: 'Voir',
+                              icon: <Eye className="h-4 w-4" />,
+                              onClick: () => handleViewDocument(document)
+                            },
+                            {
+                              label: 'Télécharger',
+                              icon: <Download className="h-4 w-4" />,
+                              onClick: () => handleDownloadDocument(document)
+                            },
+                            {
+                              label: 'Modifier',
+                              icon: <Edit className="h-4 w-4" />,
+                              onClick: () => handleEditDocument(document)
+                            },
+                            {
+                              label: 'Partager',
+                              icon: <Share2 className="h-4 w-4" />,
+                              onClick: () => handleShareDocument(document)
+                            }
+                          ]}
+                        />
+                      </ResponsiveTableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ResponsiveTableWrapper>
           ) : (
             <EmptyState
               icon={<FileText className="h-10 w-10 text-muted-foreground" />}
@@ -805,7 +818,8 @@ function CBDashboardContent() {
                 ))}
               </div>
             ) : filteredDossiers.length > 0 ? (
-              <Table>
+              <ResponsiveTableWrapper>
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Numéro</TableHead>
@@ -877,13 +891,15 @@ function CBDashboardContent() {
                           <DropdownMenuTrigger asChild>
                             <Button 
                               variant="ghost" 
-                              size="sm"
+                              size="icon"
+                              className="touch-target h-9 w-9 sm:h-8 sm:w-8"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 console.log('🖱️ Clic sur le bouton menu pour dossier:', dossier.numeroDossier)
                               }}
                             >
                               <MoreHorizontal className="w-4 h-4" />
+                              <span className="sr-only">Ouvrir le menu d'actions</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -1024,6 +1040,7 @@ function CBDashboardContent() {
                   ))}
                 </TableBody>
               </Table>
+              </ResponsiveTableWrapper>
             ) : (
               <EmptyState
                 icon={<FileText className="h-10 w-10 text-muted-foreground" />}
