@@ -20,15 +20,37 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // Configuration des images pour Vercel
+  // Configuration des images pour Vercel - Optimisée
   images: {
-    // unoptimized: true, // Commenté pour Vercel
+    // Formats optimisés pour réduire les coûts et améliorer les performances
+    formats: ['image/avif', 'image/webp'],
+    // Qualités optimisées
+    qualities: [75, 90],
+    // Tailles d'images optimisées
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Cache TTL optimisé (31 jours)
+    minimumCacheTTL: 2678400,
+    // Patterns pour les images locales
+    localPatterns: [
+      {
+        pathname: '/logo-tresor-public.svg',
+        search: '',
+      },
+      {
+        pathname: '/TrésorPublicGabon.jpg',
+        search: '',
+      },
+    ],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
       },
     ],
+    // Désactiver l'optimisation pour les SVG (déjà optimisés)
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   // Configuration expérimentale
@@ -46,6 +68,7 @@ const nextConfig: NextConfig = {
   // Configuration des headers pour optimiser les preloads
   async headers() {
     return [
+      // Headers généraux pour toutes les pages
       {
         source: '/(.*)',
         headers: [
@@ -69,20 +92,63 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
           },
-          // Headers de performance
+          // Headers de performance optimisés
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
+            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'
           }
         ],
       },
-      // Headers spécifiques pour les images
+      // Headers pour les images statiques (cache long)
       {
         source: '/logo-tresor-public.svg',
         headers: [
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable'
+          },
+          {
+            key: 'Content-Type',
+            value: 'image/svg+xml'
+          }
+        ],
+      },
+      {
+        source: '/TrésorPublicGabon.jpg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+      // Headers pour les polices (cache long)
+      {
+        source: '/fonts/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+      // Headers pour les assets Next.js (cache long)
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
+      // Headers pour les pages HTML (cache court avec revalidation)
+      {
+        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
           }
         ],
       },

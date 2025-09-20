@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, lazy, Suspense, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,10 +9,146 @@ import { AlertTriangle, Eye, EyeOff, Mail, Lock, CheckCircle, XCircle, ArrowRigh
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { redirectByRole } from '@/lib/role-redirect'
 import Image from 'next/image'
+import { WebVitals } from '@/components/analytics/web-vitals'
 
 // Lazy loading des composants non critiques
 const ThemeToggle = lazy(() => import('@/components/ui/theme-toggle').then(mod => ({ default: mod.ThemeToggle })))
 const ButtonLoading = lazy(() => import('@/components/ui/loading-states').then(mod => ({ default: mod.ButtonLoading })))
+
+// Composant mémorisé pour éviter les re-renders
+const LoginForm = memo(function LoginForm({ 
+  formData, 
+  handleInputChange, 
+  handleSubmit, 
+  isLoading, 
+  error, 
+  emailValid, 
+  showPassword, 
+  setShowPassword, 
+  capsLockOn,
+  setCapsLockOn
+}: any) {
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm font-medium">{error}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm font-semibold text-foreground">
+          Identifiant
+        </Label>
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Mail className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+          </div>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            required
+            className={`pl-10 h-12 border-input bg-background focus:border-primary focus:ring-primary rounded-lg transition-all duration-200 hover:border-primary/50 ${
+              emailValid === true ? 'border-green-500 focus:border-green-500 focus:ring-green-500' :
+              emailValid === false ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''
+            }`}
+            placeholder="votre@email.com"
+            autoFocus
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={isLoading}
+          />
+          {emailValid !== null && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              {emailValid ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <XCircle className="h-5 w-5 text-destructive" />
+              )}
+            </div>
+          )}
+        </div>
+        {emailValid === false && (
+          <p className="text-destructive text-xs">Veuillez entrer votre identifiant</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-sm font-semibold text-foreground">
+          Mot de passe
+        </Label>
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Lock className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
+          </div>
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            className="pl-10 pr-12 h-12 border-input bg-background focus:border-primary focus:ring-primary rounded-lg transition-all duration-200 hover:border-primary/50"
+            placeholder="Votre mot de passe"
+            value={formData.password}
+            onChange={handleInputChange}
+            onKeyUp={(e) => setCapsLockOn(e.getModifierState('CapsLock'))}
+            onKeyDown={(e) => setCapsLockOn(e.getModifierState('CapsLock'))}
+            onBlur={() => setCapsLockOn(false)}
+            disabled={isLoading}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors duration-200 h-auto p-0"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+        
+        {capsLockOn && (
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>Verr. Maj activée</span>
+          </div>
+        )}
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Suspense fallback={<div className="flex items-center justify-center">Connexion...</div>}>
+            <ButtonLoading
+              isLoading={true}
+              loadingText="Connexion en cours..."
+              variant="login"
+              size="sm"
+              color="primary"
+            >
+              Connexion en cours...
+            </ButtonLoading>
+          </Suspense>
+        ) : (
+          <div className="flex items-center justify-center">
+            <span>Se connecter</span>
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </div>
+        )}
+      </Button>
+    </form>
+  )
+})
 
 export default function LoginPage() {
   const router = useRouter()
@@ -158,124 +294,18 @@ export default function LoginPage() {
             </div>
 
             <div className="p-6 sm:p-8">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-destructive">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-sm font-medium">{error}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">
-                    Identifiant
-                  </Label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
-                    </div>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      className={`pl-10 h-12 border-input bg-background focus:border-primary focus:ring-primary rounded-lg transition-all duration-200 hover:border-primary/50 ${
-                        emailValid === true ? 'border-green-500 focus:border-green-500 focus:ring-green-500' :
-                        emailValid === false ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''
-                      }`}
-                      placeholder="votre@email.com"
-                      autoFocus
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      disabled={isLoading}
-                    />
-                    {emailValid !== null && (
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                        {emailValid ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-destructive" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {emailValid === false && (
-                    <p className="text-destructive text-xs">Veuillez entrer votre identifiant</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">
-                    Mot de passe
-                  </Label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
-                    </div>
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      className="pl-10 pr-12 h-12 border-input bg-background focus:border-primary focus:ring-primary rounded-lg transition-all duration-200 hover:border-primary/50"
-                      placeholder="Votre mot de passe"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      onKeyUp={(e) => setCapsLockOn(e.getModifierState('CapsLock'))}
-                      onKeyDown={(e) => setCapsLockOn(e.getModifierState('CapsLock'))}
-                      onBlur={() => setCapsLockOn(false)}
-                      disabled={isLoading}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors duration-200 h-auto p-0"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </div>
-                  
-                  {capsLockOn && (
-                    <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      <span>Verr. Maj activée</span>
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Suspense fallback={<div className="flex items-center justify-center">Connexion...</div>}>
-                      <ButtonLoading
-                        isLoading={true}
-                        loadingText="Connexion en cours..."
-                        variant="login"
-                        size="sm"
-                        color="primary"
-                      >
-                        Connexion en cours...
-                      </ButtonLoading>
-                    </Suspense>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <span>Se connecter</span>
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </div>
-                  )}
-                </Button>
-              </form>
+              <LoginForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                error={error}
+                emailValid={emailValid}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                capsLockOn={capsLockOn}
+                setCapsLockOn={setCapsLockOn}
+              />
             </div>
           </div>
         </div>
@@ -290,6 +320,9 @@ export default function LoginPage() {
           acge-gabon.com
         </p>
       </div>
+
+      {/* Web Vitals tracking */}
+      <WebVitals />
 
       {/* Styles CSS simplifiés */}
       <style jsx>{`

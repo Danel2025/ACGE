@@ -44,7 +44,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
         
-        {/* Preload des polices critiques uniquement */}
+        {/* Preload des ressources critiques pour optimiser le LCP */}
         <link
           rel="preload"
           href="/fonts/outfit/OutfitVariableFont_wght1.ttf"
@@ -52,13 +52,20 @@ export default function RootLayout({
           type="font/ttf"
           crossOrigin="anonymous"
         />
-        {/* Preload de l'image critique */}
+        {/* Preload de l'image critique avec fetchpriority */}
         <link
           rel="preload"
           href="/logo-tresor-public.svg"
           as="image"
           type="image/svg+xml"
+          fetchPriority="high"
         />
+        {/* DNS prefetch pour les domaines externes */}
+        <link rel="dns-prefetch" href="//vitals.vercel-analytics.com" />
+        <link rel="dns-prefetch" href="//vercel.live" />
+        {/* Preconnect pour les connexions critiques */}
+        <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
+        <link rel="preconnect" href="https://vercel.live" />
       </head>
       <body className="font-outfit">
         <ThemeProvider
