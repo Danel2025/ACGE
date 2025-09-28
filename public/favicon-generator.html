@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACGE Favicon Generator</title>
+</head>
+<body>
+    <h1>ACGE Favicon Generator</h1>
+    <div id="favicons"></div>
+    
+    <script>
+        // Générer les favicons
+        const sizes = [16, 32, 180];
+        const container = document.getElementById('favicons');
+        
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Fond blanc
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Texte ACGE
+            ctx.fillStyle = '#000000';
+            ctx.font = `bold ${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ACGE', size/2, size/2);
+            
+            // Convertir en data URL
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // Créer un lien de téléchargement
+            const link = document.createElement('a');
+            link.download = `favicon-${size}x${size}.png`;
+            link.href = dataUrl;
+            link.textContent = `Télécharger favicon-${size}x${size}.png`;
+            link.style.display = 'block';
+            link.style.margin = '10px 0';
+            container.appendChild(link);
+        });
+    </script>
+</body>
+</html>

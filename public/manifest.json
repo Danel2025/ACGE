@@ -1,0 +1,16 @@
+{
+  "name": "ACGE - Agence Comptable des Grandes Écoles",
+  "short_name": "ACGE",
+  "description": "Application moderne de gestion comptable des grandes écoles",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/logo-tresor-public.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
