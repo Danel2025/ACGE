@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: acge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: acge_database
+      POSTGRES_USER: acge_user
+      POSTGRES_PASSWORD: acge_password_dev
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - acge-network
+
+  # Optionnel: pgAdmin pour l'administration
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: acge-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@acge.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - acge-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  acge-network:
+    driver: bridge

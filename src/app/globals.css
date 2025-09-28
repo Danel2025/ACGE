@@ -1,0 +1,887 @@
+/* eslint-disable css/no-unknown-at-rules */
+/* stylelint-disable */
+/* This file contains Tailwind CSS directives that may not be recognized by standard CSS linters */
+/* stylelint-disable */
+@import "tailwindcss";
+
+/* Import des polices Inter locales - police principale */
+
+/* Inter Regular */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter Light */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Light-BETA.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Light Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-LightItalic-BETA.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter Medium */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Medium Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter SemiBold */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter SemiBold Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-SemiBoldItalic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter Bold */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Bold Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter ExtraBold */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter ExtraBold Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-ExtraBoldItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter Black */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Black Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter Thin */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-Thin-BETA.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter Thin Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-ThinItalic-BETA.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Inter ExtraLight */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-ExtraLight-BETA.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Inter ExtraLight Italic */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter/Inter-ExtraLightItalic-BETA.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Box-sizing border-box pour tous les éléments */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Import des polices personnalisées */
+
+/* Import automatique des polices Helvetica (fallback) */
+/* Déclarations @font-face pour Helvetica intégrées directement */
+
+/* Police principale - Regular en premier */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica/Helvetica.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Variante légère */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica/helvetica-light-587ebe5a59211.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Variante en gras */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica/Helvetica-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Variante italique */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica/Helvetica-Oblique.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Variante gras italique */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica/Helvetica-BoldOblique.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Outfit - Pour les titres uniquement */
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/outfit/OutfitRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('/fonts/outfit/OutfitBold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import de FreeMono pour les numéros, dates, etc. */
+@font-face {
+  font-family: 'FreeMono';
+  src: url('/fonts/freemono/FreeMono.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FreeMono';
+  src: url('/fonts/freemono/FreeMonoBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FreeMono';
+  src: url('/fonts/freemono/FreeMonoOblique.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FreeMono';
+  src: url('/fonts/freemono/FreeMonoBoldOblique.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+/* Animations essentielles uniquement */
+
+/* Animation de fade-in pour le loading */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Styles pour l'avatar avec effet hover subtil */
+.avatar-hover {
+  transition: box-shadow 0.2s ease;
+}
+
+.avatar-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour les cartes avec effet de profondeur subtil */
+.card-elevated {
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-elevated:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Styles pour les inputs avec focus amélioré */
+.input-enhanced:focus {
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+}
+
+/* Styles pour les boutons avec effet de pression subtil */
+.btn-press:active {
+  transform: scale(0.98);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'FreeMono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.25 0.15 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.15 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.15 240);
+  --primary: oklch(0.25 0.15 240);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.25 0.15 240);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.25 0.15 240);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.25 0.15 240);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.25 0.15 240);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.25 0.15 240);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.25 0.15 240);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.25 0.15 240);
+  /* Palette vive pour icônes (clair) */
+  --icon-blue-bg: oklch(0.93 0.06 230);
+  --icon-blue-fg: oklch(0.45 0.16 230);
+  --icon-green-bg: oklch(0.93 0.08 150);
+  --icon-green-fg: oklch(0.42 0.15 150);
+  --icon-purple-bg: oklch(0.94 0.07 300);
+  --icon-purple-fg: oklch(0.42 0.18 300);
+  --icon-orange-bg: oklch(0.94 0.09 70);
+  --icon-orange-fg: oklch(0.5 0.17 70);
+  --icon-red-bg: oklch(0.94 0.09 25);
+  --icon-red-fg: oklch(0.5 0.18 25);
+}
+
+.dark {
+  --background: oklch(0.25 0.15 240);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.2 0.15 240);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.2 0.15 240);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0.25 0.15 240);
+  --secondary: oklch(0.3 0.15 240);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.3 0.15 240);
+  --muted-foreground: oklch(0.9 0 0);
+  --accent: oklch(0.3 0.15 240);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 20%);
+  --ring: oklch(1 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.2 0.15 240);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0.25 0.15 240);
+  --sidebar-accent: oklch(0.3 0.15 240);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 15%);
+  --sidebar-ring: oklch(1 0 0);
+  /* Palette vive pour icônes (sombre) */
+  --icon-blue-bg: oklch(0.28 0.07 230);
+  --icon-blue-fg: oklch(0.85 0.09 230);
+  --icon-green-bg: oklch(0.3 0.09 150);
+  --icon-green-fg: oklch(0.88 0.08 150);
+  --icon-purple-bg: oklch(0.3 0.1 300);
+  --icon-purple-fg: oklch(0.88 0.1 300);
+  --icon-orange-bg: oklch(0.32 0.11 70);
+  --icon-orange-fg: oklch(0.9 0.1 70);
+  --icon-red-bg: oklch(0.32 0.11 25);
+  --icon-red-fg: oklch(0.9 0.11 25);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, 'Noto Sans', sans-serif;
+  }
+}
+
+/* stylelint-disable */
+@layer utilities {
+
+
+  /* Classes utilitaires pour les modales responsives */
+  .modal-responsive {
+    @apply w-full max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)];
+  }
+
+  .modal-compact-spacing {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+
+  .modal-grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4;
+  }
+
+  .modal-button-responsive {
+    @apply w-full sm:w-auto flex-shrink-0;
+  }
+
+  .modal-text-responsive {
+    @apply text-sm sm:text-base;
+  }
+
+  .modal-icon-responsive {
+    @apply h-4 w-4 sm:h-5 sm:w-5;
+  }
+
+  /* Gestion du débordement de texte dans les modales */
+  .modal-text-ellipsis {
+    @apply truncate min-w-0;
+  }
+
+  /* Amélioration du scroll dans les modales */
+  .modal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .modal-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-scroll::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .modal-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground));
+  }
+
+  /* Styles personnalisés pour la barre de défilement de la sidebar */
+  .sidebar-scroll {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    /* Permet le défilement tactile même sans barre visible */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    display: none !important;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+
+  /* Styles pour les zones de défilement dans la sidebar */
+  .sidebar-content-scroll {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    /* Permet le défilement tactile même sans barre visible */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-content-scroll::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  .sidebar-content-scroll::-webkit-scrollbar-track {
+    display: none !important;
+  }
+
+  .sidebar-content-scroll::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+
+  /* Styles pour les ScrollArea dans la sidebar */
+  .sidebar [data-slot="scroll-area-scrollbar"] {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .sidebar [data-slot="scroll-area-thumb"] {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+  }
+
+  .sidebar [data-slot="scroll-area-corner"] {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+  }
+
+  /* Styles globaux pour masquer toutes les barres de défilement dans la sidebar */
+  .sidebar * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .sidebar *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  .sidebar *::-webkit-scrollbar-track {
+    display: none !important;
+  }
+
+  .sidebar *::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+
+  /* Suppression complète de tous les crochets et boutons de défilement */
+  .sidebar *::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .sidebar *::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+  }
+
+  /* Styles pour tous les éléments de défilement dans la sidebar */
+  .sidebar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    display: none !important;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    display: none !important;
+  }
+
+  .sidebar::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .sidebar::-webkit-scrollbar-corner {
+    display: none !important;
+    background: transparent !important;
+  }
+
+  /* Utilitaires responsive globaux */
+  .container-responsive {
+    @apply w-full max-w-[100vw] px-3 sm:px-6 mx-auto;
+  }
+
+  .hide-on-mobile {
+    @apply hidden sm:block;
+  }
+
+
+  /* Amélioration de l'UX mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .safe-area-inset {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Animation de chargement responsive */
+  .skeleton-responsive {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* Amélioration des focus pour accessibilité */
+  .focus-visible-enhanced:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Amélioration de l'UX mobile - breakpoints personnalisés */
+  @media (max-width: 640px) {
+    /* Réduction des paddings sur mobile */
+    .mobile-compact {
+      @apply px-3 py-2;
+    }
+
+    /* Taille de texte plus grande sur mobile pour la lisibilité */
+    .mobile-text {
+      @apply text-base;
+    }
+
+    /* Espacement réduit entre les éléments sur mobile */
+    .mobile-spacing {
+      @apply space-y-3;
+    }
+
+    /* Boutons pleine largeur sur mobile */
+    .mobile-full-width {
+      @apply w-full;
+    }
+  }
+
+  /* Amélioration pour les écrans tactiles */
+  @media (hover: none) and (pointer: coarse) {
+    /* Désactiver les effets hover sur tactile */
+    .hover-desktop-only:hover {
+      @apply bg-transparent;
+    }
+
+    /* Augmenter la taille des targets tactiles */
+    .touch-friendly {
+      @apply min-h-[48px] min-w-[48px];
+    }
+  }
+
+  /* Optimisations pour les très petits écrans (moins de 380px) */
+  @media (max-width: 380px) {
+    .xs-compact {
+      @apply px-2 py-1 text-sm;
+    }
+
+    .xs-hide {
+      @apply hidden;
+    }
+
+    .xs-full {
+      @apply w-full;
+    }
+  }
+
+  /* Amélioration de la lisibilité sur mobile */
+  .mobile-readable {
+    @apply text-base leading-relaxed;
+  }
+
+  /* Grilles responsives améliorées */
+  .grid-responsive-1-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  .grid-responsive-1-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  .grid-responsive-1-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4;
+  }
+  /* Utilitaires de couleurs d'icônes */
+  .icon-blue-bg { background-color: var(--icon-blue-bg); }
+  .icon-blue-fg { color: var(--icon-blue-fg); }
+  .icon-green-bg { background-color: var(--icon-green-bg); }
+  .icon-green-fg { color: var(--icon-green-fg); }
+  .icon-purple-bg { background-color: var(--icon-purple-bg); }
+  .icon-purple-fg { color: var(--icon-purple-fg); }
+  .icon-orange-bg { background-color: var(--icon-orange-bg); }
+  .icon-orange-fg { color: var(--icon-orange-fg); }
+  .icon-red-bg { background-color: var(--icon-red-bg); }
+  .icon-red-fg { color: var(--icon-red-fg); }
+
+  /* Classes utilitaires pour les polices */
+  /*
+   * GUIDE D'UTILISATION DES POLICES:
+   *
+   * Police principale (Inter):
+   * - Utilisée par défaut pour tout le texte
+   * - Police optimisée pour la lisibilité et la compacité
+   * - Classes: (par défaut), .font-inter, .font-helvetica (compatibilité)
+   *
+   * Police pour les titres (Outfit):
+   * - Utilisée spécifiquement pour les titres
+   * - Police moderne et élégante pour les en-têtes
+   * - Classes: .font-title, .font-title-bold, .font-title-semibold, etc.
+   *
+   * Police monospace (FreeMono):
+   * - Pour les numéros, dates, codes, montants
+   * - Classes: .font-mono, .text-number, .text-date, .text-amount, etc.
+   *
+   * Exemples d'utilisation:
+   * - <h1 class="font-title-bold text-2xl">Titre principal</h1>
+   * - <p>Texte normal (Inter par défaut)</p>
+   * - <span class="text-number">123456</span>
+   */
+
+  /* Police Inter - police par défaut pour le texte avec espacement compact */
+  .font-inter {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  .font-helvetica {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Poids de police Inter spécifiques */
+  .font-inter-thin { font-family: 'Inter', sans-serif; font-weight: 100; }
+  .font-inter-extralight { font-family: 'Inter', sans-serif; font-weight: 200; }
+  .font-inter-light { font-family: 'Inter', sans-serif; font-weight: 300; }
+  .font-inter-regular { font-family: 'Inter', sans-serif; font-weight: 400; }
+  .font-inter-medium { font-family: 'Inter', sans-serif; font-weight: 500; }
+  .font-inter-semibold { font-family: 'Inter', sans-serif; font-weight: 600; }
+  .font-inter-bold { font-family: 'Inter', sans-serif; font-weight: 700; }
+  .font-inter-extrabold { font-family: 'Inter', sans-serif; font-weight: 800; }
+  .font-inter-black { font-family: 'Inter', sans-serif; font-weight: 900; }
+
+  /* Variantes d'Inter avec espacement ajusté */
+  .font-inter-tight {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  .font-inter-normal {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0em;
+  }
+
+  /* Police Outfit - pour les titres uniquement */
+  .font-title { font-family: 'Outfit', sans-serif; }
+  .font-outfit { font-family: 'Outfit', sans-serif; }
+  .font-outfit-light { font-family: 'Outfit', sans-serif; font-weight: 300; }
+  .font-outfit-regular { font-family: 'Outfit', sans-serif; font-weight: 400; }
+  .font-outfit-medium { font-family: 'Outfit', sans-serif; font-weight: 500; }
+  .font-outfit-semibold { font-family: 'Outfit', sans-serif; font-weight: 600; }
+  .font-outfit-bold { font-family: 'Outfit', sans-serif; font-weight: 700; }
+  .font-outfit-extrabold { font-family: 'Outfit', sans-serif; font-weight: 800; }
+  .font-outfit-black { font-family: 'Outfit', sans-serif; font-weight: 900; }
+
+  /* Classes pour les titres avec Outfit */
+  .font-title-light { font-family: 'Outfit', sans-serif; font-weight: 300; }
+  .font-title-regular { font-family: 'Outfit', sans-serif; font-weight: 400; }
+  .font-title-medium { font-family: 'Outfit', sans-serif; font-weight: 500; }
+  .font-title-semibold { font-family: 'Outfit', sans-serif; font-weight: 600; }
+  .font-title-bold { font-family: 'Outfit', sans-serif; font-weight: 700; }
+  .font-title-extrabold { font-family: 'Outfit', sans-serif; font-weight: 800; }
+  .font-title-black { font-family: 'Outfit', sans-serif; font-weight: 900; }
+
+  /* Police FreeMono - pour numéros, dates, codes, etc. */
+  .font-mono { font-family: 'FreeMono', monospace; }
+  .font-free-mono { font-family: 'FreeMono', monospace; }
+  .font-free-mono-regular { font-family: 'FreeMono', monospace; font-weight: 400; }
+  .font-free-mono-bold { font-family: 'FreeMono', monospace; font-weight: 700; }
+  .font-free-mono-italic { font-family: 'FreeMono', monospace; font-style: italic; }
+  .font-free-mono-bold-italic { font-family: 'FreeMono', monospace; font-weight: 700; font-style: italic; }
+
+  /* Classes spécialisées pour différents types de contenu */
+  .text-number {
+    font-family: 'FreeMono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .text-date {
+    font-family: 'FreeMono', monospace;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .text-code {
+    font-family: 'FreeMono', monospace;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .text-reference {
+    font-family: 'FreeMono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .text-amount {
+    font-family: 'FreeMono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .text-id {
+    font-family: 'FreeMono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    font-size: 0.875em;
+  }
+}
+/* stylelint-enable */

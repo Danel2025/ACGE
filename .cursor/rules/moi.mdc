@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+Avant d'implémenter une fonctionnalité ou autre, prends toujours la peine de consulter les docs pour avoir un travail propre.
+
+# === RÈGLE OBLIGATOIRE SHADCN/UI ===
+- TOUJOURS utiliser les composants Shadcn/UI pour tous les éléments d'interface utilisateur
+- Si un composant Shadcn/UI n'existe pas, le créer en suivant les standards Shadcn/UI basés sur Radix UI
+- NE JAMAIS utiliser de composants UI personnalisés ou d'autres bibliothèques UI
+- Vérifier d'abord si le composant existe dans src/components/ui/ avant d'en créer un nouveau
+- Suivre la structure et les conventions Shadcn/UI pour tous les nouveaux composants
+- Utiliser les dépendances Radix UI appropriées pour chaque composant

@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-09-19T21:53:49.510Z",
+  "total": 40,
+  "passed": 37,
+  "failed": 3,
+  "successRate": 93,
+  "failedTests": [
+    {
+      "endpoint": "/api/dossiers",
+      "method": "GET",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "expected": [
+        200,
+        401
+      ]
+    },
+    {
+      "endpoint": "/api/documents/dossiers-comptables",
+      "method": "GET",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "expected": [
+        200,
+        401
+      ]
+    },
+    {
+      "endpoint": "/api/dossiers/test-id/generate-quitus",
+      "method": "GET",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "expected": [
+        200,
+        404,
+        401,
+        400
+      ]
+    }
+  ],
+  "discoveredEndpoints": 112
+}

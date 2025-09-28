@@ -1,0 +1,44 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "apply",
+          "theme",
+          "custom-variant",
+          "layer",
+          "config",
+          "screen",
+          "font-face"
+        ]
+      }
+    ],
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": [
+          "font-display",
+          "scrollbar-width",
+          "scrollbar-color",
+          "-webkit-line-clamp",
+          "-webkit-box-orient"
+        ]
+      }
+    ],
+    "declaration-property-unit-disallowed-list": null,
+    "declaration-property-value-no-unknown": [
+      true,
+      {
+        "ignoreProperties": ["/-webkit-line-clamp/"]
+      }
+    ]
+  },
+  "ignoreFiles": [
+    "node_modules/**/*",
+    ".next/**/*",
+    "dist/**/*"
+  ]
+}

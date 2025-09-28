@@ -1,0 +1,48 @@
+# Configuration .htaccess pour Next.js sur LWS
+
+# Activation du module de réécriture
+RewriteEngine On
+
+# Redirection HTTPS (si certificat SSL activé)
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Gestion des routes Next.js pour l'export statique
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /$1/index.html [L]
+
+# Headers de sécurité
+Header always set X-Frame-Options DENY
+Header always set X-Content-Type-Options nosniff
+Header always set Referrer-Policy "origin-when-cross-origin"
+Header always set X-XSS-Protection "1; mode=block"
+
+# Cache pour les assets statiques
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+    Header set Cache-Control "public, immutable"
+</FilesMatch>
+
+# Compression Gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Protection contre les accès directs aux fichiers sensibles
+<FilesMatch "\.(env|log|sql|md|json|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Redirection des erreurs 404 vers la page d'accueil
+ErrorDocument 404 /index.html

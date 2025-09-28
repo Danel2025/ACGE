@@ -1,0 +1,18 @@
+# Scripts de développement et déploiement
+scripts/
+*.config.js
+*.config.mjs
+*.config.ts
+.next/
+node_modules/
+out/
+build/
+
+# Fichiers générés
+prisma/migrations/
+*.d.ts
+.env*
+
+# Fichiers de build
+dist/
+coverage/
