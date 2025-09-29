@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { LoadingState } from '@/components/ui/loading-states'
 import { Label } from '@/components/ui/label'
 import {
   DropdownMenu,
@@ -54,6 +55,7 @@ import { DocumentEditModal } from '@/components/documents/document-edit-modal'
 import { DocumentShareModal } from '@/components/documents/document-share-modal'
 import { DocumentPreviewModal } from '@/components/ui/document-preview-modal'
 import { DocumentItem } from '@/types/document'
+import { OrdonnancementModal } from '@/components/ordonnateur/ordonnancement-modal'
 interface DossierComptable {
   id: string
   numeroDossier: string
@@ -139,35 +141,25 @@ function DossierDetailContent() {
       setIsLoadingDossier(false)
     }
   }, [dossierId])
-  // Charger les documents du dossier
-  const loadDossierDocuments = React.useCallback(async (folderId: string) => {
+  // Charger les documents du dossier comptable
+  const loadDossierDocuments = React.useCallback(async (dossierId: string) => {
     try {
-      console.log('📁 Chargement des documents du dossier:', folderId)
+      console.log('📁 Chargement des documents du dossier comptable:', dossierId)
       setDocumentsLoading(true)
       setDocumentsError('')
-      // Charger les détails du dossier
-      console.log('📁 Appel API dossier:', `/api/folders/${folderId}`)
-      const folderRes = await fetch(`/api/folders/${folderId}`)
-      console.log('📁 Réponse API dossier:', folderRes.status, folderRes.ok)
-      if (folderRes.ok) {
-        const folderData = await folderRes.json()
-        console.log('📁 Données dossier reçues:', folderData)
-        setCurrentFolder(folderData.folder || folderData)
-      } else {
-        const errorData = await folderRes.text()
-        console.error('❌ Erreur API dossier:', folderRes.status, errorData)
-        setDocumentsError(`Erreur lors du chargement du dossier (${folderRes.status})`)
-      }
-      // Charger les documents du dossier
-      console.log('📄 Appel API documents:', `/api/documents?folderId=${folderId}`)
-      const documentsRes = await fetch(`/api/documents?folderId=${folderId}`)
+
+      // Charger les documents liés au dossier comptable (architecture définitive)
+      console.log('📄 Appel API documents définitive:', `/api/documents-by-dossier-comptable?dossier_comptable_id=${dossierId}`)
+      const documentsRes = await fetch(`/api/documents-by-dossier-comptable?dossier_comptable_id=${dossierId}`)
       console.log('📄 Réponse API documents:', documentsRes.status, documentsRes.ok)
+
       if (documentsRes.ok) {
         const response = await documentsRes.json()
         console.log('📄 Données documents reçues:', response)
         // L'API retourne { documents: [...], pagination: {...} }
         const documentsArray = response.documents || []
         console.log('📄 Nombre de documents trouvés:', documentsArray.length)
+
         // Adapter les données pour correspondre à notre interface
         const adaptedDocuments = documentsArray.map((doc: any): DocumentItem => ({
           ...doc,
@@ -190,6 +182,7 @@ function DossierDetailContent() {
         setDocumentsError(`Erreur lors du chargement des documents (${documentsRes.status})`)
       }
     } catch (error) {
+      console.error('❌ Erreur chargement documents:', error)
       setDocumentsError('Erreur lors du chargement des documents')
     } finally {
       setDocumentsLoading(false)
@@ -202,10 +195,7 @@ function DossierDetailContent() {
   // Charger les documents quand le dossier est chargé
   React.useEffect(() => {
     if (dossier) {
-      const folderId = dossier.folderId || dossier.folder_id
-      if (folderId) {
-        loadDossierDocuments(folderId)
-      }
+      loadDossierDocuments(dossier.id)
     }
   }, [dossier, loadDossierDocuments])
   // Filtrage et tri des documents
@@ -300,10 +290,7 @@ function DossierDetailContent() {
       if (response.ok) {
         // Recharger les documents après suppression
         if (dossier) {
-          const folderId = dossier.folderId || dossier.folder_id
-          if (folderId) {
-            await loadDossierDocuments(folderId)
-          }
+          await loadDossierDocuments(dossier.id)
         }
         setDeleteModalOpen(false)
         setDocumentToDelete(null)
@@ -420,99 +407,98 @@ function DossierDetailContent() {
         title={dossier.numeroDossier}
         subtitle={dossier.objetOperation}
         actions={
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+          <div className="flex flex-wrap gap-2 items-center">
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 loadDossierDetails()
                 if (dossier) {
-                  const folderId = dossier.folderId || dossier.folder_id
-                  if (folderId) {
-                    loadDossierDocuments(folderId)
-                  }
+                  loadDossierDocuments(dossier.id)
                 }
               }}
+              className="flex items-center gap-2"
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Rafraîchir
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline">Rafraîchir</span>
             </Button>
             {dossier.statut === 'VALIDÉ_CB' && (
-              <Button 
+              <Button
                 onClick={() => setOrdonnancementOpen(true)}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
               >
-                <FileCheck className="mr-2 h-4 w-4" />
-                Ordonner
+                <FileCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Ordonner</span>
               </Button>
             )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => router.push('/ordonnateur-dashboard')}
+              className="flex items-center gap-2"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Retour</span>
             </Button>
           </div>
         }
       />
         {/* Informations du dossier */}
         <ContentSection title="Informations du dossier">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Bénéficiaire</p>
-                <p className="text-sm font-medium">{dossier.beneficiaire}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+              <User className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Bénéficiaire</p>
+                <p className="text-sm font-medium text-foreground truncate">{dossier.beneficiaire}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-              <Tag className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Poste Comptable</p>
-                <p className="text-sm font-medium">
+            <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+              <Tag className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Poste Comptable</p>
+                <p className="text-sm font-medium text-foreground">
                   {dossier.poste_comptable?.numero || 'N/A'} - {dossier.poste_comptable?.intitule || 'N/A'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Date de dépôt</p>
-                <p className="text-sm font-medium">{formatDate(dossier.dateDepot)}</p>
+            <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Date de dépôt</p>
+                <p className="text-sm font-medium text-foreground">{formatDate(dossier.dateDepot)}</p>
               </div>
             </div>
           </div>
         </ContentSection>
         {/* Stats du dossier */}
         <ContentSection title="Statistiques">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <FileText className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Documents</p>
-                <p className="text-lg font-title-semibold">{documents.length}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border">
+              <FileText className="h-6 w-6 text-primary flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Documents</p>
+                <p className="text-xl font-title-semibold">{documents.length}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <Folder className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Taille</p>
-                <p className="text-lg font-title-semibold">
-                  {documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) > 0 
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border">
+              <Folder className="h-6 w-6 text-primary flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Taille totale</p>
+                <p className="text-xl font-title-semibold">
+                  {documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) > 0
                     ? `${(documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) / 1024 / 1024).toFixed(1)} MB`
                     : '0 MB'
                   }
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Statut</p>
-                <Badge className={`${statutInfo.className} border text-xs`}>
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border">
+              <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Statut</p>
+                <Badge className={`${statutInfo.className} border text-xs w-fit`}>
                   {statutInfo.label}
                 </Badge>
               </div>
@@ -520,15 +506,15 @@ function DossierDetailContent() {
           </div>
         </ContentSection>
         {/* Barre de recherche pour les documents */}
-        <ContentSection 
+        <ContentSection
           title="Documents du dossier"
           subtitle={`${documents.length} document${documents.length > 1 ? 's' : ''} dans ce dossier`}
           actions={
-            <div className="flex gap-2">
-              <select 
-                value={documentSortField} 
+            <div className="flex flex-wrap gap-2 items-center">
+              <select
+                value={documentSortField}
                 onChange={(e) => setDocumentSortField(e.target.value as any)}
-                className="px-3 py-1 border border-input bg-background rounded-md text-sm h-8"
+                className="px-3 py-2 border border-input bg-background rounded-md text-sm min-w-[160px] h-9"
               >
                 <option value="updatedAt">Date de modification</option>
                 <option value="title">Nom</option>
@@ -540,20 +526,20 @@ function DossierDetailContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setDocumentSortOrder(documentSortOrder === 'asc' ? 'desc' : 'asc')}
-                className="h-8"
+                className="h-9 px-3"
               >
                 {documentSortOrder === 'asc' ? '↑' : '↓'}
               </Button>
             </div>
           }
         >
-          <div className="relative">
+          <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Rechercher dans les documents..."
               value={documentSearchQuery}
               onChange={(e) => setDocumentSearchQuery(e.target.value)}
-              className="pl-10 pr-4 h-8"
+              className="pl-10 pr-4 h-10"
             />
           </div>
         </ContentSection>
@@ -571,100 +557,109 @@ function DossierDetailContent() {
             description={documentsError}
           />
         ) : filteredDocuments.length > 0 ? (
-          <div className="overflow-hidden">
+          <div className="overflow-hidden border rounded-lg">
             <Table>
               <TableHeader>
-                <TableRow className="border-b">
-                  <TableHead className="font-semibold">Nom</TableHead>
-                  <TableHead className="font-semibold">Catégorie</TableHead>
-                  <TableHead className="font-semibold">Taille</TableHead>
-                  <TableHead className="font-semibold">Type</TableHead>
-                  <TableHead className="font-semibold">Date de création</TableHead>
-                  <TableHead className="w-20 font-semibold">Actions</TableHead>
+                <TableRow className="border-b bg-muted/50">
+                  <TableHead className="font-semibold text-left">Nom du document</TableHead>
+                  <TableHead className="font-semibold text-center hidden md:table-cell">Catégorie</TableHead>
+                  <TableHead className="font-semibold text-center hidden lg:table-cell">Taille</TableHead>
+                  <TableHead className="font-semibold text-center hidden lg:table-cell">Type</TableHead>
+                  <TableHead className="font-semibold text-center hidden sm:table-cell">Date</TableHead>
+                  <TableHead className="font-semibold text-center w-16">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDocuments.map((document, index) => (
-                  <TableRow key={document.id} className={index % 2 === 0 ? "bg-muted/30" : ""}>
-                    <TableCell className="font-medium py-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="truncate max-w-[200px]">{document.fileName || document.title}</span>
+                  <TableRow key={document.id} className={`border-b hover:bg-muted/30 transition-colors ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                    <TableCell className="font-medium py-4">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="truncate block max-w-[250px] font-medium">{document.fileName || document.title}</span>
+                          <span className="text-xs text-muted-foreground md:hidden">
+                            {document.fileSize ?
+                              `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` :
+                              'N/A'
+                            } • {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
+                          </span>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3">
+                    <TableCell className="py-4 text-center hidden md:table-cell">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                         {document.category || 'Non classé'}
                       </span>
                     </TableCell>
-                    <TableCell className="py-3 text-sm text-muted-foreground">
-                      <span className="text-number">
-                        {document.fileSize ? 
-                          `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` : 
-                          'N/A'
-                        }
-                      </span>
+                    <TableCell className="py-4 text-center text-sm text-muted-foreground hidden lg:table-cell">
+                      {document.fileSize ?
+                        `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` :
+                        'N/A'
+                      }
                     </TableCell>
-                    <TableCell className="py-3 text-sm text-muted-foreground">
+                    <TableCell className="py-4 text-center text-sm text-muted-foreground hidden lg:table-cell">
                       {document.fileType || 'N/A'}
                     </TableCell>
-                    <TableCell className="py-3 text-sm text-muted-foreground">
-                      <span className="text-date">
-                        {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
-                      </span>
+                    <TableCell className="py-4 text-center text-sm text-muted-foreground hidden sm:table-cell">
+                      {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
                     </TableCell>
-                    <TableCell className="py-3">
+                    <TableCell className="py-4 text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenuItem 
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
                               handleViewDocument(document)
                             }}
+                            className="flex items-center gap-2"
                           >
-                            <Eye className="mr-2 h-4 w-4" />
-                            Voir
+                            <Eye className="h-4 w-4" />
+                            Aperçu
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
                               handleDownloadDocument(document)
                             }}
+                            className="flex items-center gap-2"
                           >
-                            <Download className="mr-2 h-4 w-4" />
+                            <Download className="h-4 w-4" />
                             Télécharger
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
                               handleShareDocument(document)
                             }}
+                            className="flex items-center gap-2"
                           >
-                            <Share2 className="mr-2 h-4 w-4" />
+                            <Share2 className="h-4 w-4" />
                             Partager
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditDocument(document)
                             }}
+                            className="flex items-center gap-2"
                           >
-                            <Edit className="mr-2 h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                             Modifier
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
                               handleDeleteDocument(document)
                             }}
-                            className="text-red-600"
+                            className="text-red-600 flex items-center gap-2"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                             Supprimer
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -682,51 +677,21 @@ function DossierDetailContent() {
             description="Ce dossier ne contient aucun document."
           />
         )}
-        {/* Modal d'ordonnancement */}
-        <Dialog open={ordonnancementOpen} onOpenChange={setOrdonnancementOpen}>
-          <DialogContent showCloseButton={false}>
-            <DialogHeader>
-              <DialogTitle>Ordonner la dépense</DialogTitle>
-              <DialogDescription>
-                Ordonnez la dépense pour le dossier {dossier.numeroDossier}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="ordonnancement-comment">Commentaire (optionnel)</Label>
-                <Textarea
-                  id="ordonnancement-comment"
-                  placeholder="Ajoutez un commentaire sur l'ordonnancement..."
-                  value={ordonnancementComment}
-                  onChange={(e) => setOrdonnancementComment(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setOrdonnancementOpen(false)
-                setOrdonnancementComment('')
-              }}>
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleOrdonnance}
-                disabled={actionLoading}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {actionLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Ordonnancement...
-                  </>
-                ) : (
-                  'Ordonner'
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Modal d'ordonnancement - Composant réutilisable */}
+        <OrdonnancementModal
+          isOpen={ordonnancementOpen}
+          onClose={() => {
+            setOrdonnancementOpen(false)
+            setOrdonnancementComment('')
+          }}
+          dossier={dossier}
+          verificationSummary={null} // Pas de résumé des vérifications dans cette vue
+          onOrdonnance={async (dossierId: string) => {
+            await handleOrdonnance()
+          }}
+          isLoading={actionLoading}
+          error={null}
+        />
         {/* Modales pour les documents */}
         {selectedDocument && (
           <>
@@ -751,10 +716,7 @@ function DossierDetailContent() {
               onClose={() => setEditModalOpen(false)}
               onSave={() => {
                 if (dossier) {
-                  const folderId = dossier.folderId || dossier.folder_id
-                  if (folderId) {
-                    loadDossierDocuments(folderId)
-                  }
+                  loadDossierDocuments(dossier.id)
                 }
               }}
             />
@@ -785,7 +747,9 @@ function DossierDetailContent() {
               >
                 {isDeleting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <div className="mr-2 h-4 w-4">
+                      <LoadingState isLoading={true} size="sm" showText={false} />
+                    </div>
                     Suppression...
                   </>
                 ) : (

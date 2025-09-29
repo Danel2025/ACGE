@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { CompactPageLayout, PageHeader, EmptyState } from '@/components/shared/compact-page-layout'
+import { CompactPageLayout, PageHeader, EmptyState, ContentSection } from '@/components/shared/compact-page-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -33,6 +33,7 @@ import {
   Trash2,
   Calendar,
   Target,
+  RefreshCw,
 } from 'lucide-react'
 import { UploadWithTrigger } from '@/components/upload/upload-with-trigger'
 
@@ -111,12 +112,18 @@ export default function DossierDetailPage() {
     try {
       setDocumentsLoading(true)
 
-      const response = await fetch(`/api/dossiers/${dossierId}/documents`)
+      const response = await fetch(`/api/dossiers/${dossierId}/documents`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
       if (!response.ok) {
         throw new Error('Erreur lors du chargement des documents')
       }
 
       const data = await response.json()
+      console.log('📄 Documents récupérés:', data)
       if (data.success) {
         setDocuments(data.documents || [])
       }
@@ -305,6 +312,10 @@ export default function DossierDetailPage() {
               Documents ({documents.length})
             </CardTitle>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={fetchDocuments} disabled={documentsLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${documentsLoading ? 'animate-spin' : ''}`} />
+                Actualiser
+              </Button>
               <Dialog open={addExistingModalOpen} onOpenChange={setAddExistingModalOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" onClick={fetchAvailableDocuments}>

@@ -22,12 +22,7 @@ export async function GET(request: NextRequest) {
     // Récupérer les dossiers rejetés par le CB
     const { data: dossiers, error } = await admin
       .from('dossiers')
-      .select(`
-        *,
-        poste_comptable:posteComptableId(*),
-        nature_document:natureDocumentId(*),
-        secretaire:secretaireId(id, name, email)
-      `)
+      .select('*')
       .eq('statut', 'REJETÉ_CB')
       .order('createdAt', { ascending: false })
 

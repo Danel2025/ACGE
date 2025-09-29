@@ -81,7 +81,6 @@ export default function DashboardPage() {
           <LoadingState
             isLoading={true}
             message="Redirection vers votre interface..."
-            variant="spinner"
             size="lg"
             color="primary"
             showText={true}

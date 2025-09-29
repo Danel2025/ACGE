@@ -14,12 +14,14 @@ export async function GET(request: NextRequest) {
     // Récupérer les paramètres de requête
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
-    const dossierId = searchParams.get('dossierId')
+    const dossierId = searchParams.get('dossierId') // Legacy - pour folder_id
+    const folderId = searchParams.get('folderId') // Legacy - pour folder_id
+    const dossierComptableId = searchParams.get('dossier_comptable_id') // Nouveau - pour dossier_comptable_id
     const unassigned = searchParams.get('unassigned') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
 
-    console.log('📄 Paramètres:', { search, dossierId, unassigned, page, limit })
+    console.log('📄 Paramètres:', { search, dossierId, folderId, dossierComptableId, unassigned, page, limit })
 
     // Connexion à Supabase
     const supabase = getSupabaseAdmin()
@@ -61,9 +63,10 @@ export async function GET(request: NextRequest) {
           )
         `, { count: 'exact' })
 
-      // Filtre par dossier si spécifié
-      if (dossierId) {
-        query = query.eq('folder_id', dossierId)
+      // Filtre par dossier si spécifié (legacy)
+      if (dossierId || folderId) {
+        const folderIdToUse = dossierId || folderId
+        query = query.eq('folder_id', folderIdToUse)
       }
 
       // Filtre pour les documents non assignés (sans folder_id)

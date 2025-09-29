@@ -54,15 +54,10 @@ export async function PUT(
       )
     }
     
-    // Récupérer le dossier avec toutes les informations
+    // Récupérer le dossier avec les informations essentielles
     const { data: dossier, error: fetchError } = await admin
       .from('dossiers')
-      .select(`
-        *,
-        poste_comptable:posteComptableId(*),
-        nature_document:natureDocumentId(*),
-        secretaire:secretaireId(id, name, email)
-      `)
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -132,12 +127,7 @@ export async function PUT(
         updatedAt: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        poste_comptable:posteComptableId(*),
-        nature_document:natureDocumentId(*),
-        secretaire:secretaireId(id, name, email)
-      `)
+      .select('*')
       .single()
 
     if (updateError) {
@@ -156,9 +146,9 @@ export async function PUT(
     // 🔔 NOTIFICATIONS INTELLIGENTES PAR RÔLE
     try {
       // Notifier la secrétaire
-      if (dossier.secretaire?.id) {
+      if (dossier.secretaireId) {
         await NotificationsByRole.notifySecretaire({
-          userId: dossier.secretaire.id,
+          userId: dossier.secretaireId,
           dossierId: dossier.id,
           numeroDossier: dossier.numeroDossier,
           action: 'dossier_rejected',

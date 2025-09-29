@@ -32,6 +32,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingState } from '@/components/ui/loading-states'
 import { Loader2, AlertTriangle, Save, X, FileText, User, Building, Tag } from 'lucide-react'
 
 interface PosteComptable {
@@ -428,7 +429,9 @@ export function DossierEditForm({ dossier, isOpen, onClose, onSave }: DossierEdi
                         <SelectContent>
                           {isLoadingReferences ? (
                             <SelectItem value="loading" disabled>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <div className="mr-2 h-4 w-4">
+                                <LoadingState isLoading={true} size="sm" showText={false} />
+                              </div>
                               Chargement...
                             </SelectItem>
                           ) : (
@@ -469,7 +472,9 @@ export function DossierEditForm({ dossier, isOpen, onClose, onSave }: DossierEdi
                         <SelectContent>
                           {isLoadingReferences ? (
                             <SelectItem value="loading" disabled>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <div className="mr-2 h-4 w-4">
+                                <LoadingState isLoading={true} size="sm" showText={false} />
+                              </div>
                               Chargement...
                             </SelectItem>
                           ) : (
@@ -512,7 +517,9 @@ export function DossierEditForm({ dossier, isOpen, onClose, onSave }: DossierEdi
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="mr-2 h-4 w-4">
+                  <LoadingState isLoading={true} size="sm" showText={false} />
+                </div>
                 Modification...
               </>
             ) : (

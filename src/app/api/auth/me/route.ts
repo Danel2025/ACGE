@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (authToken) {
       try {
         console.log('🔐 Tentative avec cookie JWT...')
-        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development') as any
+        const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
         const userId = decoded.userId
         console.log('🔐 JWT décodé, userId:', userId)
         console.log('🔐 JWT complet:', JSON.stringify(decoded, null, 2))

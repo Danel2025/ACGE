@@ -4,9 +4,9 @@ import React from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Loader2, 
-  RefreshCw, 
-  CheckCircle2, 
+import {
+  RefreshCw,
+  CheckCircle2,
   AlertTriangle,
   Clock,
   FileText,
@@ -15,13 +15,13 @@ import { Loader2,
   Trash2,
   Save,
   LogIn
- } from 'lucide-react'
+} from 'lucide-react'
 
 interface LoadingStateProps {
   isLoading: boolean
   message?: string
   progress?: number
-  variant?: 'skeleton' | 'spinner' | 'progress' | 'pulse' | 'dots' | 'refresh' | 'delete' | 'save' | 'login'
+  variant?: 'skeleton' | 'spinner' | 'progress' | 'pulse' | 'dots' | 'refresh' | 'delete' | 'save' | 'login' | 'bars'
   size?: 'sm' | 'md' | 'lg' | 'xl'
   color?: 'primary' | 'white' | 'destructive' | 'muted'
   showText?: boolean
@@ -32,12 +32,13 @@ export function LoadingState({
   isLoading,
   message = 'Chargement...',
   progress,
-  variant = 'spinner',
+  variant = 'bars',
   size = 'md',
   color = 'primary',
   showText = true,
   className = ''
 }: LoadingStateProps) {
+
   if (!isLoading) return null
 
   const sizeClasses = {
@@ -79,7 +80,22 @@ export function LoadingState({
         return (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Loader2 className={iconClass} />
+              <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+                {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'} ${size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'} bg-primary rounded-full animate-pulse`}
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                      transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
+                      animationDelay: `${i * 0.1}s`,
+                      animationDuration: '1s'
+                    }}
+                  />
+                ))}
+              </div>
               {showText && <span className={textClass}>{message}</span>}
             </div>
             {progress !== undefined && (
@@ -100,6 +116,36 @@ export function LoadingState({
               <div className={`${sizeClasses[size]} rounded-full bg-primary/20 animate-pulse`}></div>
               <div className={`${sizeClasses[size]} rounded-full bg-primary/40 animate-pulse absolute inset-0`} 
                    style={{ animationDelay: '0.5s' }}></div>
+            </div>
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+
+      case 'bars':
+        const barsSize = size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'
+        const barCount = size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10
+        const barWidth = size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'
+        const barHeight = size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'
+        const radius = size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'
+
+        return (
+          <div className="flex items-center gap-3">
+            <div className={`relative ${barsSize}`}>
+              {[...Array(barCount)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${barWidth} ${barHeight} bg-primary rounded-full animate-pulse`}
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    transformOrigin: `50% ${radius}`,
+                    transform: `translate(-50%, -50%) rotate(${i * (360 / barCount)}deg)`,
+                    animationDelay: `${i * 0.1}s`,
+                    animationDuration: '1s'
+                  }}
+                />
+              ))}
             </div>
             {showText && <span className={textClass}>{message}</span>}
           </div>
@@ -150,10 +196,48 @@ export function LoadingState({
         )
 
       case 'spinner':
-      default:
         return (
           <div className="flex items-center gap-3">
-            <Loader2 className={iconClass} />
+            <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+              {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'} ${size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'} bg-primary rounded-full animate-pulse`}
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                    transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
+                    animationDelay: `${i * 0.1}s`,
+                    animationDuration: '1s'
+                  }}
+                />
+              ))}
+            </div>
+            {showText && <span className={textClass}>{message}</span>}
+          </div>
+        )
+
+      default:
+        // Default case for 'bars' variant and any other cases - same as explicit 'bars' case
+        return (
+          <div className="flex items-center gap-3">
+            <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+              {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'} ${size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'} bg-primary rounded-full animate-pulse`}
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                    transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
+                    animationDelay: `${i * 0.1}s`,
+                    animationDuration: '1s'
+                  }}
+                />
+              ))}
+            </div>
             {showText && <span className={textClass}>{message}</span>}
           </div>
         )
@@ -260,7 +344,24 @@ export function ActionLoadingState({
   const getIcon = () => {
     switch (state) {
       case 'loading':
-        return <Loader2 className="h-4 w-4 animate-spin" />
+        return (
+          <div className={`relative w-4 h-4`}>
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-0.5 h-1.5 bg-current rounded-full animate-pulse"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transformOrigin: '50% 8px',
+                  transform: `translate(-50%, -50%) rotate(${i * 60}deg)`,
+                  animationDelay: `${i * 0.1}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
+        )
       case 'success':
         return <CheckCircle2 className="h-4 w-4 text-green-600" />
       case 'error':
@@ -368,7 +469,7 @@ interface ButtonLoadingProps {
   isLoading: boolean
   loadingText?: string
   children: React.ReactNode
-  variant?: 'refresh' | 'delete' | 'save' | 'login' | 'spinner'
+  variant?: 'refresh' | 'delete' | 'save' | 'login' | 'spinner' | 'bars'
   size?: 'sm' | 'md' | 'lg'
   color?: 'primary' | 'white' | 'destructive' | 'muted'
   className?: string
@@ -378,7 +479,7 @@ export function ButtonLoading({
   isLoading,
   loadingText,
   children,
-  variant = 'spinner',
+  variant = 'bars',
   size = 'sm',
   color = 'primary',
   className = ''
@@ -400,8 +501,51 @@ export function ButtonLoading({
 
   const getIcon = () => {
     const iconClass = `${sizeClasses[size]} animate-spin ${colorClasses[color]}`
-    
+    const barsIconSize = size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'
+    const barIconCount = size === 'sm' ? 6 : size === 'md' ? 8 : 8
+    const barIconWidth = size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : 'w-0.5'
+    const barIconHeight = size === 'sm' ? 'h-1' : size === 'md' ? 'h-1.5' : 'h-2'
+    const iconRadius = size === 'sm' ? '6px' : size === 'md' ? '8px' : '10px'
+
     switch (variant) {
+      case 'bars':
+        return (
+          <div className={`relative ${barsIconSize}`}>
+            {[...Array(barIconCount)].map((_, i) => (
+              <div
+                key={i}
+                className={`absolute ${barIconWidth} ${barIconHeight} bg-current rounded-full animate-pulse`}
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transformOrigin: `50% ${iconRadius}`,
+                  transform: `translate(-50%, -50%) rotate(${i * (360 / barIconCount)}deg)`,
+                  animationDelay: `${i * 0.125}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
+        )
+      case 'spinner':
+        return (
+          <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'}`}>
+            {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : 8)].map((_, i) => (
+              <div
+                key={i}
+                className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : 'w-0.5'} ${size === 'sm' ? 'h-1' : size === 'md' ? 'h-1.5' : 'h-2'} bg-current rounded-full animate-pulse`}
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '8px' : '10px'}`,
+                  transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : 8))}deg)`,
+                  animationDelay: `${i * 0.125}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
+        )
       case 'refresh':
         return <RefreshCw className={iconClass} />
       case 'delete':
@@ -411,7 +555,31 @@ export function ButtonLoading({
       case 'login':
         return <LogIn className={iconClass} />
       default:
-        return <Loader2 className={iconClass} />
+        // Default case for 'bars' variant and any other cases
+        const barsIconSize = size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'
+        const barIconCount = size === 'sm' ? 6 : size === 'md' ? 8 : 8
+        const barIconWidth = size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : 'w-0.5'
+        const barIconHeight = size === 'sm' ? 'h-1' : size === 'md' ? 'h-1.5' : 'h-2'
+        const iconRadius = size === 'sm' ? '6px' : size === 'md' ? '8px' : '10px'
+
+        return (
+          <div className={`relative ${barsIconSize}`}>
+            {[...Array(barIconCount)].map((_, i) => (
+              <div
+                key={i}
+                className={`absolute ${barIconWidth} ${barIconHeight} bg-current rounded-full animate-pulse`}
+                style={{
+                  left: '50%',
+                  top: '50%',
+                  transformOrigin: `50% ${iconRadius}`,
+                  transform: `translate(-50%, -50%) rotate(${i * (360 / barIconCount)}deg)`,
+                  animationDelay: `${i * 0.125}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
+        )
     }
   }
 
@@ -451,7 +619,6 @@ export function PageLoading({
         <LoadingState
           isLoading={true}
           message={message}
-          variant="spinner"
           size={size}
           showText={true}
         />
@@ -481,7 +648,6 @@ export function ModalLoading({
       <LoadingState
         isLoading={true}
         message={message}
-        variant="spinner"
         size="md"
         showText={true}
       />

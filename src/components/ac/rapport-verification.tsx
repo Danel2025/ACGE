@@ -6,12 +6,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  FileText, 
-  User, 
+import { LoadingState } from '@/components/ui/loading-states'
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  FileText,
+  User,
   Calendar,
   DollarSign,
   Eye,
@@ -82,8 +83,7 @@ export function RapportVerification({ dossierId, onValidationComplete }: Rapport
   if (loading || isLoading('rapport')) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Génération du rapport de vérification...</span>
+        <LoadingState isLoading={true} message="Génération du rapport de vérification..." />
       </div>
     )
   }

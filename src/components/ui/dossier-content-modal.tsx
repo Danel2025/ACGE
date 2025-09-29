@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { LoadingState } from '@/components/ui/loading-states'
 import { FileText,
   Download,
   Eye,
@@ -87,65 +88,36 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
   const [documentSearchQuery, setDocumentSearchQuery] = React.useState('')
   const [documentSortField, setDocumentSortField] = React.useState<'title' | 'createdAt' | 'updatedAt' | 'fileSize' | 'fileType'>('updatedAt')
   const [documentSortOrder, setDocumentSortOrder] = React.useState<'asc' | 'desc'>('desc')
-  // Charger le contenu du dossier
+  // Charger le contenu du dossier (nouvelle architecture)
   const loadDossierContent = React.useCallback(async () => {
     if (!dossier) return
-    const folderId = dossier.folderId || dossier.folder_id
-    if (!folderId) {
-      console.log('❌ Pas de folderId pour ce dossier:', dossier)
-      setDocumentsError('Ce dossier n\'est pas lié à un dossier de fichiers')
-      return
-    }
+
     try {
       setDocumentsLoading(true)
       setDocumentsError('')
-      console.log('📁 Chargement du contenu du dossier:', folderId)
-      // Charger les informations du dossier
-      const folderRes = await fetch(`/api/folders/${folderId}`)
-      if (folderRes.ok) {
-        const folderData = await folderRes.json()
-        setCurrentFolder(folderData.folder || folderData)
-      } else {
-        setDocumentsError('Erreur lors du chargement du dossier')
-        return
-      }
-      // Charger les documents du dossier
-      const documentsRes = await fetch(`/api/documents?folderId=${folderId}`)
+      console.log('📄 Chargement des documents du dossier comptable:', dossier.id)
+
+      // Nouvelle architecture : charger directement les documents liés au dossier comptable
+      const documentsRes = await fetch(`/api/documents-by-dossier-comptable?dossier_comptable_id=${dossier.id}`)
       if (documentsRes.ok) {
-        const response = await documentsRes.json()
-        console.log('📄 Données documents reçues:', response)
-        // L'API retourne { documents: [...], pagination: {...} }
-        const documentsArray = response.documents || []
-        console.log('📄 Nombre de documents trouvés:', documentsArray.length)
-        // Debug: afficher le premier document reçu
-        if (documentsArray.length > 0) {
-          console.log('📄 Premier document reçu (debug):', documentsArray[0])
-          console.log('📄 Premier document reçu (debug):', {
-            id: documentsArray[0].id,
-            originalId: documentsArray[0].originalId,
-            title: documentsArray[0].title
-          })
-        }
-        // Adapter les données pour correspondre à notre interface
-        const adaptedDocuments = documentsArray.map((doc: any): DocumentItem => ({
-          ...doc,
-          // L'API documents retourne déjà id (artificiel) et originalId (UUID)
-          // On garde la structure telle quelle
-          fileName: doc.fileName || doc.currentVersion?.fileName || 'document',
-          fileSize: doc.fileSize || doc.currentVersion?.fileSize || 0,
-          fileType: doc.fileType || doc.currentVersion?.fileType || 'unknown',
-          filePath: doc.filePath || doc.currentVersion?.filePath || '',
-          tags: doc.tags || [],
-          author: doc.author || { id: 'unknown', name: 'Utilisateur inconnu', email: 'unknown@example.com' },
-          _count: {
-            comments: doc._count?.comments || 0,
-            shares: doc._count?.shares || 0
-          }
-        }))
-        setDocuments(adaptedDocuments)
-        setFilteredDocuments(adaptedDocuments)
+        const documentsData = await documentsRes.json()
+        setDocuments(documentsData.documents || [])
+        setFilteredDocuments(documentsData.documents || [])
+
+        // Simuler un "dossier" pour la compatibilité avec l'interface existante
+        setCurrentFolder({
+          id: dossier.id,
+          name: `Dossier ${dossier.numeroDossier}`,
+          numeroDossier: dossier.numeroDossier,
+          documents: documentsData.documents || []
+        })
       } else {
-        setDocumentsError('Erreur lors du chargement des documents')
+        if (documentsRes.status === 404) {
+          setDocumentsError('Ce dossier n\'est pas lié à un dossier de fichiers')
+        } else {
+          setDocumentsError('Erreur lors du chargement des documents')
+        }
+        return
       }
     } catch (error) {
       console.error('❌ Erreur chargement contenu dossier:', error)
@@ -223,7 +195,9 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
   }, [])
   const handleDownloadDocument = async (document: DocumentItem) => {
     try {
-      const response = await fetch(`/api/documents/${document.id}/download`)
+      // Utiliser l'ID original (UUID) au lieu de l'ID artificiel
+      const documentId = document.originalId || document.id
+      const response = await fetch(`/api/documents/${documentId}/download`)
       if (response.ok) {
         const blob = await response.blob()
         const url = window.URL.createObjectURL(blob)
@@ -313,97 +287,107 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
             {/* Informations consolidées en une seule ligne */}
             <div className="p-3 sm:p-4 bg-muted/20 border-b">
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 text-sm">
-                <div className="flex items-center gap-2 min-w-0">
-                  <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Bénéficiaire</p>
-                    <p className="font-medium truncate text-sm">{dossier.beneficiaire}</p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <User className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Bénéficiaire</p>
+                      <p className="font-medium truncate text-sm">{dossier.beneficiaire}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Poste</p>
-                    <p className="font-medium truncate text-sm">
-                      <span className="text-number">{dossier.poste_comptable?.numero || 'N/A'}</span> - {dossier.poste_comptable?.intitule || 'N/A'}
-                    </p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Poste</p>
+                      <p className="font-medium truncate text-sm">
+                        <span className="text-number">{dossier.poste_comptable?.numero || 'N/A'}</span> - {dossier.poste_comptable?.intitule || 'N/A'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Dépôt</p>
-                    <p className="font-medium truncate text-sm text-date">{formatDate(dossier.dateDepot)}</p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Dépôt</p>
+                      <p className="font-medium truncate text-sm text-date">{formatDate(dossier.dateDepot)}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Documents</p>
-                    <p className="font-medium text-sm">{documents.length}</p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Documents</p>
+                      <p className="font-medium text-sm">{documents.length}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Taille</p>
-                    <p className="font-medium text-sm">
-                      {documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) > 0 
-                        ? `${(documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) / 1024 / 1024).toFixed(1)} MB`
-                        : '0 MB'
-                      }
-                    </p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Taille</p>
+                      <p className="font-medium text-sm">
+                        {documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) > 0
+                          ? `${(documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) / 1024 / 1024).toFixed(1)} MB`
+                          : '0 MB'
+                        }
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Modifié</p>
-                    <p className="font-medium truncate text-sm">
-                      {currentFolder?.updatedAt 
-                        ? new Date(currentFolder.updatedAt).toLocaleDateString('fr-FR')
-                        : 'Inconnue'
-                      }
-                    </p>
+                <div className="min-w-0">
+                  <div className="flex items-start gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Modifié</p>
+                      <p className="font-medium truncate text-sm">
+                        {currentFolder?.updatedAt
+                          ? new Date(currentFolder.updatedAt).toLocaleDateString('fr-FR')
+                          : 'Inconnue'
+                        }
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Barre de recherche compacte */}
-            <div className="p-3 sm:p-4 border-b">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Rechercher dans les documents..."
-                      value={documentSearchQuery}
-                      onChange={(e) => setDocumentSearchQuery(e.target.value)}
-                      className="pl-10 h-9"
-                    />
-                  </div>
+            {/* Barre de recherche et tri intégrée */}
+            <div className="flex items-center justify-between gap-3 p-3 border-b bg-muted/5">
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={documentSearchQuery}
+                    onChange={(e) => setDocumentSearchQuery(e.target.value)}
+                    className="pl-8 h-8 text-sm"
+                  />
                 </div>
-                <div className="flex gap-2">
-                  <select 
-                    value={documentSortField} 
-                    onChange={(e) => setDocumentSortField(e.target.value as any)}
-                    className="px-3 py-2 border border-input bg-background rounded-md text-sm h-9"
-                  >
-                    <option value="updatedAt">Date de modification</option>
-                    <option value="title">Nom</option>
-                    <option value="createdAt">Date de création</option>
-                    <option value="fileSize">Taille</option>
-                    <option value="fileType">Type</option>
-                  </select>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDocumentSortOrder(documentSortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="h-9 px-3"
-                  >
-                    {documentSortOrder === 'asc' ? '↑' : '↓'}
-                  </Button>
-                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={documentSortField}
+                  onChange={(e) => setDocumentSortField(e.target.value as any)}
+                  className="px-2 py-1 text-xs border border-input bg-background rounded min-w-[100px] h-8"
+                >
+                  <option value="updatedAt">Date modif.</option>
+                  <option value="title">Nom</option>
+                  <option value="createdAt">Date créa.</option>
+                  <option value="fileSize">Taille</option>
+                  <option value="fileType">Type</option>
+                </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDocumentSortOrder(documentSortOrder === 'asc' ? 'desc' : 'asc')}
+                  className="h-8 w-8 p-0"
+                >
+                  {documentSortOrder === 'asc' ? '↑' : '↓'}
+                </Button>
               </div>
             </div>
             {/* Tableau des documents optimisé */}
@@ -426,54 +410,83 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
                     {documentsError}
                   </div>
                 ) : filteredDocuments.length > 0 ? (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {filteredDocuments.map((document) => (
-                      <div key={document.id} className="flex items-start sm:items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate text-sm">{document.fileName || document.title}</p>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1 text-xs text-muted-foreground">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 w-fit">
-                              {document.category || 'Non classé'}
-                            </span>
-                            <div className="flex flex-wrap gap-2 sm:gap-4">
-                              <span>
-                                {document.fileSize ? 
-                                  `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` : 
-                                  'Taille inconnue'
-                                }
-                              </span>
-                              <span className="hidden xs:inline">{document.fileType || 'Type inconnu'}</span>
-                              <span className="hidden sm:inline">
-                                {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
-                              </span>
+                      <div key={document.id} className="group flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/30 transition-all duration-200 hover:shadow-sm">
+                        {/* Icône et informations principales */}
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <FileText className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-foreground truncate" title={document.fileName || document.title}>
+                                  {document.fileName || document.title}
+                                </p>
+                                <div className="flex items-center gap-3 mt-1">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-200">
+                                    {document.category || 'Non classé'}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {document.fileSize ?
+                                      `${(document.fileSize / 1024 / 1024).toFixed(1)} MB` :
+                                      'Taille inconnue'
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0 text-right">
+                                <p className="text-xs text-muted-foreground">
+                                  {document.createdAt ? new Date(document.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {document.fileType || 'Type inconnu'}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-1 flex-shrink-0">
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleViewDocument(document)}
-                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleViewDocument(document)
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-muted"
+                            title="Aperçu"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDownloadDocument(document)}
-                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDownloadDocument(document)
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-muted"
+                            title="Télécharger"
                           >
                             <Download className="w-4 h-4" />
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-muted"
+                                title="Plus d'actions"
+                              >
                                 <MoreHorizontal className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleShareDocument(document)
@@ -482,7 +495,7 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
                                 <Share2 className="mr-2 h-4 w-4" />
                                 Partager
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleEditDocument(document)
@@ -491,7 +504,7 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
                                 <Edit className="mr-2 h-4 w-4" />
                                 Modifier
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleDeleteDocument(document)
@@ -520,8 +533,14 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
             </div>
           </div>
           {/* Footer avec bouton Fermer */}
-          <div className="flex justify-end p-4 border-t bg-muted/20">
-            <Button onClick={onClose} variant="outline">
+          <div className="flex justify-between items-center p-4 border-t bg-muted/10">
+            <div className="text-xs text-muted-foreground">
+              {filteredDocuments.length} document{filteredDocuments.length > 1 ? 's' : ''} • {documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) > 0
+                ? `${(documents.reduce((total, doc) => total + (doc.fileSize || 0), 0) / 1024 / 1024).toFixed(1)} MB total`
+                : 'Taille totale inconnue'
+              }
+            </div>
+            <Button onClick={onClose} variant="outline" size="sm">
               Fermer
             </Button>
           </div>
@@ -584,7 +603,9 @@ export function DossierContentModal({ dossier, isOpen, onClose }: DossierContent
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="mr-2 h-4 w-4">
+                    <LoadingState isLoading={true} size="sm" showText={false} />
+                  </div>
                   Suppression...
                 </>
               ) : (

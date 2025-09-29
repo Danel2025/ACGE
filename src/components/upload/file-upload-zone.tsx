@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Upload, 
-  File, 
-  Image, 
-  FileText, 
-  X, 
-  Check, 
+import {
+  Upload,
+  File,
+  Image,
+  FileText,
+  X,
+  Check,
   AlertTriangle,
   Loader2
 } from 'lucide-react'
+import { LoadingState } from '@/components/ui/loading-states'
 interface FileWithPreview extends File {
   preview?: string
   uploadProgress?: number
@@ -262,7 +263,7 @@ export function FileUploadZone({
                       </div>
                     )}
                     {file.uploadStatus === 'uploading' && (
-                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      <LoadingState isLoading={true} size="md" showText={false} />
                     )}
                     {file.uploadStatus === 'pending' && (
                       <Button
@@ -288,7 +289,9 @@ export function FileUploadZone({
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <div className="mr-2">
+                        <LoadingState isLoading={true} size="sm" showText={false} />
+                      </div>
                       Upload en cours...
                     </>
                   ) : (

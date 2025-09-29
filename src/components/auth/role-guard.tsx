@@ -46,7 +46,6 @@ export function RoleGuard({
             <LoadingState
               isLoading={true}
               message="Chargement..."
-              variant="spinner"
               size="lg"
               color="primary"
               showText={true}

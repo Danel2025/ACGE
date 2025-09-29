@@ -75,12 +75,12 @@ export const CacheInvalidation = {
   },
   
   onFolderChange: () => {
-    console.log('🗑️ Invalidation du cache dossiers')
+    console.log('🗑️ Invalidation sélective du cache dossiers')
     cache.invalidatePattern('folder*')
     cache.delete(CacheKeys.folders)
     cache.delete(CacheKeys.sidebarFolders)
-    // Vider complètement le cache pour forcer le rechargement
-    cache.clear()
+    // Invalidation sélective au lieu de vider tout le cache
+    // cache.clear() supprimé pour éviter l'invalidation agressive
   },
   
   onUserChange: () => {

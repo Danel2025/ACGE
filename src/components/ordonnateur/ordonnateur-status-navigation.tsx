@@ -105,32 +105,30 @@ export function OrdonnateurStatusNavigation({
   ]
 
   return (
-    <div className="bg-card border rounded-lg p-3">
-      <div className="flex flex-wrap gap-2">
-          {filters.map((filter) => {
-            const IconComponent = filter.icon
-            return (
-              <Button
-                key={filter.key}
-                variant={currentFilter === filter.key ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onFilterChange(filter.key)}
-                className="flex items-center gap-1.5 h-8 px-3"
-                title={filter.description}
-              >
-                <IconComponent className="h-4 w-4" />
-                {filter.label}
-                <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
-                  currentFilter === filter.key 
-                    ? 'bg-white/20 text-white' 
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  {filter.count}
-                </span>
-              </Button>
-            )
-          })}
-        </div>
-    </div>
+    <div className="flex flex-wrap gap-2">
+        {filters.map((filter) => {
+          const IconComponent = filter.icon
+          return (
+            <Button
+              key={filter.key}
+              variant={currentFilter === filter.key ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onFilterChange(filter.key)}
+              className="flex items-center gap-1.5 h-8 px-3"
+              title={filter.description}
+            >
+              <IconComponent className="h-4 w-4" />
+              {filter.label}
+              <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
+                currentFilter === filter.key
+                  ? 'bg-white/20 text-white'
+                  : 'bg-muted text-muted-foreground'
+              }`}>
+                {filter.count}
+              </span>
+            </Button>
+          )
+        })}
+      </div>
   )
 }

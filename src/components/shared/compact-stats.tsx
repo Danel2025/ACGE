@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, forwardRef } from 'react'
+import React, { ReactNode, forwardRef } from 'react'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -177,23 +177,23 @@ const CompactStats = forwardRef<HTMLDivElement, CompactStatsProps>(({
     minimal: 'border-none shadow-none p-2'
   }
 
-  // Configuration des schémas de couleurs - Sans fonds colorés
+  // Configuration des schémas de couleurs - Version épurée sans couleurs ni ombres
   const colorSchemes = {
     default: {
-      background: 'bg-transparent',
-      hover: 'hover:shadow-sm'
+      background: 'bg-transparent border border-gray-200',
+      hover: ''
     },
     colorful: {
-      background: 'bg-transparent',
-      hover: 'hover:shadow-md'
+      background: 'bg-transparent border border-gray-200',
+      hover: ''
     },
     monochrome: {
-      background: 'bg-transparent',
-      hover: 'hover:shadow-sm'
+      background: 'bg-transparent border border-gray-200',
+      hover: ''
     },
     pastel: {
-      background: 'bg-transparent',
-      hover: 'hover:shadow-md'
+      background: 'bg-transparent border border-gray-200',
+      hover: ''
     }
   }
 
@@ -249,11 +249,18 @@ const CompactStats = forwardRef<HTMLDivElement, CompactStatsProps>(({
             <div className={cn(
               currentConfig.icon,
               'rounded-md flex items-center justify-center',
-              stat.className || currentColors.background,
-              stat.color && `!bg-${stat.color}-100`,
-              customColors?.accent && `!bg-${customColors.accent}-100`
+              'bg-gray-50'
             )}>
-              {stat.icon}
+              {stat.color ? (
+                React.cloneElement(stat.icon as React.ReactElement, {
+                  className: cn(
+                    (stat.icon as React.ReactElement).props.className,
+                    `text-${stat.color}-600`
+                  )
+                })
+              ) : (
+                stat.icon
+              )}
             </div>
           </div>
 
@@ -265,9 +272,7 @@ const CompactStats = forwardRef<HTMLDivElement, CompactStatsProps>(({
                 <div className="flex items-center gap-1.5">
                   <p className={cn(
                     currentConfig.text,
-                    'font-medium text-gray-900 truncate leading-tight',
-                    stat.color && `text-${stat.color}-700`,
-                    customColors?.primary && `text-${customColors.primary}-700`
+                    'font-medium text-gray-900 truncate leading-tight'
                   )}>
                     {stat.label}
                   </p>
@@ -283,9 +288,7 @@ const CompactStats = forwardRef<HTMLDivElement, CompactStatsProps>(({
                 {stat.subtitle && (
                   <p className={cn(
                     'text-xs text-muted-foreground truncate leading-tight',
-                    variant === 'compact' ? 'mt-0' : 'mt-0',
-                    stat.color && `text-${stat.color}-600`,
-                    customColors?.secondary && `text-${customColors.secondary}-600`
+                    variant === 'compact' ? 'mt-0' : 'mt-0'
                   )}>
                     {stat.subtitle}
                   </p>
@@ -299,9 +302,7 @@ const CompactStats = forwardRef<HTMLDivElement, CompactStatsProps>(({
                 ) : (
                   <div className={cn(
                     currentConfig.value,
-                    'font-bold text-gray-900 truncate',
-                    stat.color && `text-${stat.color}-700`,
-                    customColors?.primary && `text-${customColors.primary}-700`
+                    'font-bold text-gray-900 truncate'
                   )}>
                     {stat.value}
                   </div>

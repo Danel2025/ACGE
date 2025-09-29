@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { Loader2 } from 'lucide-react'
 
 interface LoadingScreenProps {
   isLoading: boolean
@@ -30,6 +31,7 @@ export function LoadingScreen({ isLoading, onComplete }: LoadingScreenProps) {
     return () => clearInterval(interval)
   }, [isLoading, onComplete])
 
+
   if (!isLoading) return null
 
   return (
@@ -47,11 +49,22 @@ export function LoadingScreen({ isLoading, onComplete }: LoadingScreenProps) {
           />
         </div>
 
-        {/* Animation de points élégante */}
-        <div className="flex space-x-2">
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-primary/70 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        {/* Loader avec barres animées - style inspiré des loaders modernes */}
+        <div className="relative w-6 h-6">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-0.5 h-2 bg-primary rounded-full animate-pulse"
+              style={{
+                left: '50%',
+                top: '50%',
+                transformOrigin: '50% 12px',
+                transform: `translate(-50%, -50%) rotate(${i * 45}deg)`,
+                animationDelay: `${i * 0.125}s`,
+                animationDuration: '1s'
+              }}
+            />
+          ))}
         </div>
 
         {/* Texte avec animation de typewriter */}

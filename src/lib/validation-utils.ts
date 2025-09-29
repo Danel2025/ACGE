@@ -14,27 +14,55 @@ export interface ValidationStatus {
 
 /**
  * Vérifie si un dossier a les deux validations requises pour être validé par le CB
- * 
+ *
  * @param dossierId - ID du dossier à vérifier
  * @returns Promise<ValidationStatus> - État des validations
  */
 export async function checkDossierValidationStatus(dossierId: string): Promise<ValidationStatus> {
   try {
-    // Récupérer les validations du type d'opération
+    console.log('🔍 Vérification des validations pour dossier:', dossierId)
+
+    // Utiliser la nouvelle API combinée pour plus de fiabilité
+    const response = await fetch(`/api/dossiers/${dossierId}/validation-status`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.status) {
+        console.log('✅ Statut récupéré via nouvelle API:', data.status)
+        return data.status
+      }
+    }
+
+    console.log('⚠️ Nouvelle API non disponible, fallback vers ancienne méthode')
+
+    // Fallback vers l'ancienne méthode si la nouvelle API n'est pas disponible
     const operationTypeResponse = await fetch(`/api/dossiers/${dossierId}/validation-operation-type`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
-    
-    // Récupérer les validations des contrôles de fond
+
     const controlesFondResponse = await fetch(`/api/dossiers/${dossierId}/validation-controles-fond`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     })
-    
+
+    console.log('🔍 Résultats des API de validation (fallback):', {
+      operationType: {
+        status: operationTypeResponse.status,
+        ok: operationTypeResponse.ok
+      },
+      controlesFond: {
+        status: controlesFondResponse.status,
+        ok: controlesFondResponse.ok
+      }
+    })
+
     const hasOperationTypeValidation = operationTypeResponse.ok
     const hasControlesFondValidation = controlesFondResponse.ok
-    
+
     const missingValidations: string[] = []
     if (!hasOperationTypeValidation) {
       missingValidations.push('Validation du type d\'opération')
@@ -42,13 +70,17 @@ export async function checkDossierValidationStatus(dossierId: string): Promise<V
     if (!hasControlesFondValidation) {
       missingValidations.push('Contrôles de fond')
     }
-    
-    return {
+
+    const result = {
       hasOperationTypeValidation,
       hasControlesFondValidation,
       canValidate: hasOperationTypeValidation && hasControlesFondValidation,
       missingValidations
     }
+
+    console.log('🔍 Statut final des validations (fallback):', result)
+
+    return result
   } catch (error) {
     console.error('Erreur lors de la vérification des validations:', error)
     return {

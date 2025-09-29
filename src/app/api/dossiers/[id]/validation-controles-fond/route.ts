@@ -25,22 +25,24 @@ export async function GET(
       )
     }
     
-    // Récupérer les validations des contrôles de fond avec toutes les relations
+    // Récupérer les validations des contrôles de fond
+    console.log('🔍 Recherche des validations pour dossier_id:', dossierId)
+
     const { data: validations, error: validationsError } = await admin
       .from('validations_controles_fond')
-      .select(`
-        *,
-        controle_fond:controle_fond_id(
-          *,
-          categorie:categorie_id(*)
-        )
-      `)
+      .select('*')
       .eq('dossier_id', dossierId)
+
+    console.log('🔍 Résultat requête validations:', {
+      validations: validations,
+      count: validations?.length || 0,
+      error: validationsError
+    })
 
     if (validationsError) {
       console.error('❌ Erreur récupération validations contrôles de fond:', validationsError)
       return NextResponse.json(
-        { 
+        {
           error: 'Erreur lors de la récupération des validations',
           details: validationsError.message
         },
@@ -50,8 +52,21 @@ export async function GET(
 
     if (!validations || validations.length === 0) {
       console.log('ℹ️ Aucune validation de contrôles de fond trouvée pour le dossier:', dossierId)
+
+      // Debug: Vérifier s'il y a des validations dans la table
+      const { data: allValidations, error: debugError } = await admin
+        .from('validations_controles_fond')
+        .select('dossier_id, created_at')
+        .limit(10)
+
+      console.log('🔍 Debug - Toutes les validations dans la table:', {
+        allValidations,
+        count: allValidations?.length || 0,
+        debugError
+      })
+
       return NextResponse.json(
-        { 
+        {
           error: 'Aucune validation de contrôles de fond trouvée pour ce dossier',
           details: 'Ce dossier n\'a pas encore été validé par le Contrôleur Budgétaire'
         },

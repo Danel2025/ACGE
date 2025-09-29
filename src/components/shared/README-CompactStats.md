@@ -19,7 +19,7 @@ Un composant React hautement personnalisable pour afficher des statistiques dans
 Le composant est déjà intégré dans le projet. Importez-le simplement :
 
 ```tsx
-import { CompactStats, type StatItem } from '@/components/shared/compact-stats'
+import CompactStats, { type StatItem } from '@/components/shared/compact-stats'
 ```
 
 ## 🔧 Utilisation de Base

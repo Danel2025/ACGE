@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { LoadingState } from '@/components/ui/loading-states'
 import {
   Select,
   SelectContent,
@@ -429,7 +430,8 @@ export function ModernUploadModal({
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include'  // Important : inclure les cookies d'authentification
       })
 
       const result = await response.json()
@@ -680,7 +682,7 @@ export function ModernUploadModal({
                       />
                       {loadingExisting && (
                         <div className="flex items-center px-3">
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <LoadingState isLoading={true} size="sm" showText={false} />
                         </div>
                       )}
                     </div>
@@ -790,8 +792,8 @@ export function ModernUploadModal({
                             {loadingNatures ? (
                               <div className="p-2 text-sm text-muted-foreground text-center">
                                 <div className="flex items-center gap-2 justify-center">
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                  Chargement...
+                                  <LoadingState isLoading={true} size="sm" showText={false} />
+                                  <span className="text-sm text-muted-foreground">Chargement...</span>
                                 </div>
                               </div>
                             ) : (
@@ -891,7 +893,9 @@ export function ModernUploadModal({
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="mr-2">
+                    <LoadingState isLoading={true} size="sm" showText={false} />
+                  </div>
                   <span className="hidden sm:inline">Traitement...</span>
                   <span className="sm:hidden">...</span>
                 </>

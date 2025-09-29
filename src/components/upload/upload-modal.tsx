@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { LoadingState } from '@/components/ui/loading-states'
 import {
   Dialog,
   DialogContent,
@@ -474,7 +475,9 @@ export function UploadModal({
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <div className="w-4 h-4 mr-2">
+                    <LoadingState isLoading={true} size="sm" showText={false} />
+                  </div>
                   <span className="hidden sm:inline">Upload...</span>
                   <span className="sm:hidden">Upload...</span>
                 </>

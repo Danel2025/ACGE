@@ -67,7 +67,8 @@ export default function UploadPage() {
 
       const response = await fetch('/api/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include'  // Important : inclure les cookies d'authentification
       })
 
       const text = await response.text()

@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { LoadingState } from '@/components/ui/loading-states'
 import { Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -30,6 +28,7 @@ interface CategorieControles {
 interface ValidationControle {
   controle_fond_id: string
   valide: boolean
+  commentaire?: string
 }
 
 interface ControlesFondFormProps {
@@ -64,9 +63,10 @@ export function ControlesFondForm({
       }
       const data = await response.json()
       setCategories(data.categories || [])
-      
+
       if (data.categories && data.categories.length === 0) {
-        toast.info('Aucun contrôle de fond trouvé. Veuillez exécuter la migration.')
+        console.warn('⚠️ Aucun contrôle de fond trouvé, création de données de test...')
+        await createTestData()
       }
     } catch (error) {
       console.error('Erreur lors du chargement des contrôles:', error)
@@ -155,7 +155,7 @@ export function ControlesFondForm({
       }
       
       // Récupérer les informations utilisateur
-      let userData = {}
+      let userData: { id?: string; role?: string } = {}
       try {
         userData = JSON.parse(localStorage.getItem('user') || '{}')
         console.log('🔍 Données utilisateur du localStorage:', userData)
@@ -220,29 +220,48 @@ export function ControlesFondForm({
     loadControlesFond()
   }
 
+  const createTestData = async () => {
+    try {
+      // Pour l'instant, on va créer des contrôles de test
+      // Il faudrait d'abord créer une catégorie via l'interface admin
+
+      // Simuler la création de contrôles de test
+      // En pratique, il faudrait d'abord créer des catégories via l'interface admin
+      console.log('ℹ️ Les données de test nécessitent des catégories pré-créées')
+      console.log('ℹ️ Veuillez créer des catégories de contrôles via l\'interface admin')
+
+      // Pour le moment, on affiche juste un message informatif
+      toast.info('Les contrôles de fond nécessitent des catégories pré-créées. Utilisez l\'interface admin pour créer des catégories.')
+
+    } catch (error) {
+      console.error('❌ Erreur lors de la création des données de test:', error)
+      toast.error('Erreur lors de la création des données de test')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des contrôles de fond...</span>
+        <LoadingState isLoading={true} message="Chargement..." />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <Alert className="mb-4">
-          <XCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <div className="flex gap-2">
-          <Button onClick={reessayer} variant="outline">
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2 text-red-600">
+          <XCircle className="h-5 w-5" />
+          <span className="font-medium">Erreur</span>
+        </div>
+        <p className="text-red-700 bg-red-50 p-3 rounded border">{error}</p>
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={onCancel}>
+            Fermer
+          </Button>
+          <Button onClick={reessayer}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Réessayer
-          </Button>
-          <Button onClick={onCancel} variant="secondary">
-            Annuler
           </Button>
         </div>
       </div>
@@ -251,119 +270,98 @@ export function ControlesFondForm({
 
   return (
     <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
-      <div className="text-center border-b pb-2">
-        <h2 className="text-lg font-title-bold text-primary">
-          {mode === 'consultation' ? 'Consultation des Contrôles de Fond' : 'Contrôles de Fond'}
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          Dossier {dossierNumero}
-        </p>
+      {/* En-tête */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <CheckCircle className="h-5 w-5" />
+          <h2 className="text-lg font-semibold">
+            {mode === 'consultation' ? 'Consultation des Contrôles de Fond' : 'Contrôles de Fond'}
+          </h2>
+        </div>
+        <div className="text-sm text-gray-600">
+          Dossier: <span className="font-medium">{dossierNumero}</span>
+        </div>
       </div>
 
-      <ScrollArea className="h-[400px]">
-        <div className="space-y-4 pr-3">
-          {categories.map((categorie) => (
-            <div 
-              key={categorie.id} 
-              className="border rounded-lg overflow-hidden bg-card"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="px-4 py-3 bg-muted/30 border-b">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-title-semibold">{categorie.nom}</h3>
-                  <Badge variant="secondary" className="ml-auto text-xs px-2 py-1">
-                    {categorie.controles.length}
-                  </Badge>
-                </div>
-              </div>
-              <div className="px-4 py-2">
-                <div className="space-y-0">
-                  {categorie.controles.map((controle, index) => {
-                    const validation = validations[controle.id]
-                    const isValide = validation?.valide || false
-                    
-                    return (
-                      <div key={controle.id} onClick={(e) => e.stopPropagation()}>
-                        {/* Ligne de séparation */}
-                        {index > 0 && <Separator className="my-3" />}
-                        
-                        <div className="py-3">
-                          <div className="flex items-start gap-3">
-                            <Checkbox
-                              id={`controle-${controle.id}`}
-                              checked={isValide}
-                              onCheckedChange={(checked) => 
-                                handleControleChange(controle.id, checked as boolean)
-                              }
-                              disabled={mode === 'consultation'}
-                              className="mt-1"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <label 
-                                  htmlFor={`controle-${controle.id}`}
-                                  className="text-sm font-medium leading-tight peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {controle.nom}
-                                </label>
-                                {controle.obligatoire && (
-                                  <Badge variant="destructive" className="text-xs px-2 py-1">
-                                    Obligatoire
-                                  </Badge>
-                                )}
-                                {mode === 'consultation' && (
-                                  <div className="flex items-center gap-1">
-                                    {isValide ? (
-                                      <CheckCircle className="h-4 w-4 text-green-500" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 text-red-500" />
-                                    )}
-                                    <span className={`text-sm ${isValide ? 'text-green-600' : 'text-red-600'}`}>
-                                      {isValide ? 'Validé' : 'Non validé'}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              {controle.description && (
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                  {controle.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+      {/* Contenu */}
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        {categories.map((categorie) => (
+          <div key={categorie.id} className="border rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-medium">{categorie.nom}</h3>
+              <Badge variant="outline">
+                {categorie.controles.length} contrôle{categorie.controles.length > 1 ? 's' : ''}
+              </Badge>
             </div>
-          ))}
-        </div>
-      </ScrollArea>
 
+            {categorie.description && (
+              <p className="text-xs text-gray-600 mb-3">{categorie.description}</p>
+            )}
 
-      <div className="flex justify-end gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-        <Button onClick={onCancel} variant="outline" size="sm" className="h-8 px-3 text-xs">
+            <div className="space-y-3">
+              {categorie.controles.map((controle, index) => {
+                const validation = validations[controle.id]
+                const isValide = validation?.valide || false
+
+                return (
+                  <div key={controle.id} className="flex items-start space-x-3 p-3 border rounded">
+                    <Checkbox
+                      id={`controle-${controle.id}`}
+                      checked={isValide}
+                      onCheckedChange={(checked) =>
+                        handleControleChange(controle.id, checked as boolean)
+                      }
+                      disabled={mode === 'consultation'}
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <label
+                          htmlFor={`controle-${controle.id}`}
+                          className="text-sm font-medium cursor-pointer"
+                        >
+                          {controle.nom}
+                        </label>
+                        {controle.obligatoire && (
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                            Obligatoire
+                          </span>
+                        )}
+                        {mode === 'consultation' && (
+                          <span className={`text-xs px-2 py-0.5 rounded ${isValide ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {isValide ? 'Validé' : 'Non validé'}
+                          </span>
+                        )}
+                      </div>
+                      {controle.description && (
+                        <p className="text-xs text-gray-600 mt-1">{controle.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end space-x-2 pt-4 border-t">
+        <Button variant="outline" onClick={onCancel}>
           {mode === 'consultation' ? 'Fermer' : 'Annuler'}
         </Button>
         {mode === 'validation' && (
-          <Button 
-            onClick={confirmValidation} 
-            disabled={saving}
-            size="sm"
-            className="h-8 px-3 text-xs bg-primary hover:bg-primary/90"
-          >
+          <Button onClick={confirmValidation} disabled={saving}>
             {saving ? (
               <>
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                <div className="h-4 w-4 mr-2">
+                  <LoadingState isLoading={true} size="sm" showText={false} />
+                </div>
                 Validation...
               </>
             ) : (
               <>
-                <CheckCircle className="h-3 w-3 mr-1" />
+                <CheckCircle className="h-4 w-4 mr-2" />
                 Valider
               </>
             )}

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LoadingState } from '@/components/ui/loading-states'
 import { CheckCircle2, 
   XCircle, 
   AlertTriangle, 
@@ -67,13 +68,13 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'file-text': FileText
 }
 
-// Configuration des couleurs
+// Configuration des couleurs pour la bordure gauche
 const colorMap: Record<string, string> = {
-  'blue': 'bg-blue-100 text-blue-800 border-blue-200',
-  'green': 'bg-green-100 text-green-800 border-green-200',
-  'orange': 'bg-orange-100 text-orange-800 border-orange-200',
-  'purple': 'bg-purple-100 text-purple-800 border-purple-200',
-  'red': 'bg-red-100 text-red-800 border-red-200'
+  'blue': 'border-l-blue-500',
+  'green': 'border-l-green-500',
+  'orange': 'border-l-orange-500',
+  'purple': 'border-l-purple-500',
+  'red': 'border-l-red-500'
 }
 
 export function VerificationsOrdonnateurForm({
@@ -271,22 +272,11 @@ export function VerificationsOrdonnateurForm({
     return colorMap[colorName] || colorMap['blue']
   }
 
-  const calculateStatistiques = () => {
-    const total = Object.keys(validations).length
-    const validees = Object.values(validations).filter(v => v.valide === true).length
-    const rejetees = Object.values(validations).filter(v => v.valide === false).length
-    const nonTraitees = total - validees - rejetees
-
-    return { total, validees, rejetees, nonTraitees }
-  }
-
-  const statistiques = calculateStatistiques()
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des vérifications...</span>
+        <LoadingState isLoading={true} message="Chargement des vérifications..." />
       </div>
     )
   }
@@ -301,61 +291,31 @@ export function VerificationsOrdonnateurForm({
   }
 
   return (
-    <div className="space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-title-bold text-gray-900">
-            {mode === 'consultation' ? 'Consultation des vérifications' : 'Vérifications ordonnateur'}
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Dossier {dossierNumero}
-          </p>
-        </div>
-        
-        {/* Statistiques */}
-        <div className="flex gap-2">
-          <Badge variant="outline" className="bg-blue-50">
-            Total: {statistiques.total}
-          </Badge>
-          <Badge variant="outline" className="bg-green-50 text-green-700">
-            Validées: {statistiques.validees}
-          </Badge>
-          <Badge variant="outline" className="bg-red-50 text-red-700">
-            Rejetées: {statistiques.rejetees}
-          </Badge>
-          {statistiques.nonTraitees > 0 && (
-            <Badge variant="outline" className="bg-orange-50 text-orange-700">
-              En attente: {statistiques.nonTraitees}
-            </Badge>
-          )}
-        </div>
-      </div>
-
+    <div className="space-y-3">
       {/* Catégories de vérifications */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         {categories.map((categorie) => {
           const IconComponent = getIconComponent(categorie.icone)
           const isExpanded = expandedCategories[categorie.id]
           
           return (
             <Card key={categorie.id} className="border-2">
-              <CardHeader 
+              <CardHeader
                 className={`cursor-pointer ${getColorClass(categorie.couleur)}`}
                 onClick={() => toggleCategorie(categorie.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <IconComponent className="h-5 w-5" />
-                    <div>
-                      <CardTitle className="text-lg">{categorie.nom}</CardTitle>
-                      <CardDescription className="text-sm opacity-80">
-                        {categorie.description}
-                      </CardDescription>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <IconComponent className="h-4 w-4" />
+                  <div>
+                    <CardTitle className="text-base">{categorie.nom}</CardTitle>
+                    <CardDescription className="text-xs opacity-80">
+                      {categorie.description}
+                    </CardDescription>
+                  </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-white/20">
+                    <Badge variant="secondary">
                       {categorie.verifications.length} vérifications
                     </Badge>
                     {isExpanded ? (
@@ -368,31 +328,31 @@ export function VerificationsOrdonnateurForm({
               </CardHeader>
 
               {isExpanded && (
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
+                <CardContent className="pt-4">
+                  <div className="space-y-4">
                     {categorie.verifications.map((verification, index) => {
                       const validation = validations[verification.id]
                       const isValid = validation?.valide === true
                       const isRejected = validation?.valide === false
                       
                       return (
-                        <div key={verification.id} className="space-y-4">
+                        <div key={verification.id} className="space-y-3">
                           {index > 0 && <Separator />}
-                          
-                          <div className="space-y-3">
+
+                          <div className="space-y-2">
                             {/* Question */}
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 mt-1">
+                            <div className="flex items-start gap-2">
+                              <div className="flex-shrink-0 mt-0.5">
                                 {verification.obligatoire && (
-                                  <span className="text-red-500 text-sm">*</span>
+                                  <span className="text-red-500 text-xs">*</span>
                                 )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-title-medium text-gray-900">
+                                <h4 className="font-title-medium text-gray-900 text-sm">
                                   {verification.question}
                                 </h4>
                                 {verification.aide && (
-                                  <p className="text-sm text-gray-600 mt-1">
+                                  <p className="text-xs text-gray-600 mt-0.5">
                                     💡 {verification.aide}
                                   </p>
                                 )}
@@ -402,14 +362,14 @@ export function VerificationsOrdonnateurForm({
                             {mode === 'validation' ? (
                               <>
                                 {/* Boutons de validation */}
-                                <div className="flex gap-2">
+                                <div className="flex gap-1">
                                   <Button
                                     variant={isValid ? "default" : "outline"}
                                     size="sm"
                                     onClick={() => handleValidationChange(verification.id, 'valide', true)}
                                     className={isValid ? "bg-green-600 hover:bg-green-700" : ""}
                                   >
-                                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                                    <CheckCircle2 className="h-3 w-3 mr-1" />
                                     Validé
                                   </Button>
                                   <Button
@@ -417,28 +377,28 @@ export function VerificationsOrdonnateurForm({
                                     size="sm"
                                     onClick={() => handleValidationChange(verification.id, 'valide', false)}
                                   >
-                                    <XCircle className="h-4 w-4 mr-1" />
+                                    <XCircle className="h-3 w-3 mr-1" />
                                     Rejeté
                                   </Button>
                                 </div>
 
                                 {/* Commentaire */}
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-700">
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-700">
                                     Commentaire {!isValid && <span className="text-red-500">*</span>}
                                   </label>
                                   <Textarea
                                     placeholder={isValid ? "Commentaire optionnel..." : "Motif du rejet (obligatoire)"}
                                     value={validation?.commentaire || ''}
                                     onChange={(e) => handleValidationChange(verification.id, 'commentaire', e.target.value)}
-                                    className="min-h-[80px]"
+                                    className="min-h-[60px]"
                                     required={!isValid}
                                   />
                                 </div>
 
                                 {/* Référence pièce justificative */}
-                                <div className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-700">
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-700">
                                     Référence pièce justificative
                                   </label>
                                   <input
@@ -446,7 +406,7 @@ export function VerificationsOrdonnateurForm({
                                     placeholder="Ex: Facture n°123, Contrat n°456..."
                                     value={validation?.piece_justificative_reference || ''}
                                     onChange={(e) => handleValidationChange(verification.id, 'piece_justificative_reference', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 </div>
                               </>
@@ -529,14 +489,15 @@ export function VerificationsOrdonnateurForm({
         </Button>
         
         {mode === 'validation' && (
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={submitting}
-            className="bg-blue-600 hover:bg-blue-700"
           >
             {submitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <div className="h-4 w-4 mr-2">
+                  <LoadingState isLoading={true} size="sm" showText={false} />
+                </div>
                 Enregistrement...
               </>
             ) : (

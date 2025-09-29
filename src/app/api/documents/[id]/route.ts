@@ -116,9 +116,11 @@ export async function PUT(
     }
 
     let userId: string
+    let userRole: string
     try {
       const decoded = verify(token, process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development') as any
       userId = decoded.userId
+      userRole = decoded.role
     } catch (error) {
       return NextResponse.json({ error: 'Token invalide' }, { status: 401 })
     }
@@ -148,8 +150,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Document non trouvé' }, { status: 404 })
     }
 
-    // Vérifier les permissions (propriétaire uniquement pour l'instant)
-    if (existingDocument.author_id !== userId) {
+    // Vérifier les permissions avec support des rôles
+    const isOwner = existingDocument.author_id === userId
+    const hasElevatedPermissions = userRole === 'ADMIN' || userRole === 'SECRETAIRE'
+
+    if (!isOwner && !hasElevatedPermissions) {
+      console.log('❌ Permissions insuffisantes pour modification:', { userId, userRole, author_id: existingDocument.author_id })
       return NextResponse.json({ error: 'Permissions insuffisantes' }, { status: 403 })
     }
 
@@ -290,9 +296,11 @@ export async function DELETE(
     }
 
     let userId: string
+    let userRole: string
     try {
       const decoded = verify(token, process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development') as any
       userId = decoded.userId
+      userRole = decoded.role
     } catch (error) {
       return NextResponse.json({ error: 'Token invalide' }, { status: 401 })
     }
@@ -335,10 +343,16 @@ export async function DELETE(
       console.log('✅ Fichier WhatsApp trouvé en base:', document)
     }
 
-    // Vérifier les permissions (propriétaire uniquement pour l'instant)
-    if (document.author_id !== userId) {
+    // Vérifier les permissions avec support des rôles
+    const isOwner = document.author_id === userId
+    const hasElevatedPermissions = userRole === 'ADMIN' || userRole === 'SECRETAIRE'
+
+    if (!isOwner && !hasElevatedPermissions) {
+      console.log('❌ Permissions insuffisantes:', { userId, userRole, author_id: document.author_id })
       return NextResponse.json({ error: 'Permissions insuffisantes' }, { status: 403 })
     }
+
+    console.log('✅ Permissions accordées:', { userId, userRole, isOwner, hasElevatedPermissions })
 
     // Supprimer le fichier du storage si il existe
     if (document.file_path) {

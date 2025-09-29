@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { LoadingState } from '@/components/ui/loading-states'
 import { ThemeSelector } from '@/components/ui/theme-selector'
 import { Settings,
   Shield,
@@ -742,7 +743,9 @@ export default function SettingsPage() {
                           >
                             {isLoading ? (
                               <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <div className="mr-2 h-4 w-4">
+                                  <LoadingState isLoading={true} size="sm" showText={false} />
+                                </div>
                                 Sauvegarde...
                               </>
                             ) : (

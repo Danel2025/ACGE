@@ -166,12 +166,24 @@ export async function POST(
       valide_par: userId,
       valide_le: new Date().toISOString()
     }))
-    
+
+    console.log('🔍 Données à insérer dans validations_controles_fond:', {
+      validationsToInsert,
+      count: validationsToInsert.length,
+      dossierId
+    })
+
     const { data: newValidations, error: insertError } = await admin
       .from('validations_controles_fond')
       .insert(validationsToInsert)
       .select()
-    
+
+    console.log('🔍 Résultat insertion:', {
+      newValidations,
+      count: newValidations?.length || 0,
+      insertError
+    })
+
     if (insertError) {
       console.error('❌ Erreur lors de la création des validations:', insertError)
       return NextResponse.json(

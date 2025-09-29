@@ -135,6 +135,11 @@ export function Header({ onOpenMenu }: { onOpenMenu?: () => void }) {
                 height={48}
                 sizes="(max-width: 640px) 40px, 48px"
                 priority
+                quality={90}
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSIjZjNmNGY2Ii8+Cjwvc3ZnPgo="
+                fetchPriority="high"
+                loading="eager"
                 className="relative z-10 object-contain w-10 h-10 sm:w-12 sm:h-12 transition-all duration-300 group-hover:scale-105 drop-shadow-md"
               />
             </Button>

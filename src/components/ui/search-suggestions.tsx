@@ -168,7 +168,6 @@ export function SearchSuggestions({
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             <LoadingState
               isLoading={true}
-              variant="spinner"
               size="sm"
               color="primary"
               showText={false}

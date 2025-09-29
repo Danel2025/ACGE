@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { LoadingState } from '@/components/ui/loading-states'
 import { ChevronLeft, 
   ChevronRight, 
   Grid3X3, 
@@ -194,7 +195,7 @@ export function DocumentThumbnails({
           // Mode grille
           <div className="w-full h-full flex items-center justify-center bg-muted">
             {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <LoadingState isLoading={true} size="md" showText={false} />
             ) : hasError ? (
               <AlertTriangle className="h-6 w-6 text-destructive" />
             ) : previewUrl && document.fileType?.startsWith('image/') ? (
@@ -244,7 +245,7 @@ export function DocumentThumbnails({
           <div className="flex items-center space-x-3 w-full">
             <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-muted rounded">
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <LoadingState isLoading={true} size="sm" showText={false} />
               ) : hasError ? (
                 <AlertTriangle className="h-4 w-4 text-destructive" />
               ) : previewUrl && document.fileType?.startsWith('image/') ? (

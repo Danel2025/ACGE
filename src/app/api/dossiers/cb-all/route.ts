@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         natureDocumentId,
         secretaireId,
         folderid,
+        foldername,
         montant,
         montantordonnance,
         validatedat,
@@ -46,9 +47,6 @@ export async function GET(request: NextRequest) {
       `)
       .order('createdAt', { ascending: false })
 
-    // Les dossiers contiennent maintenant directement toutes les informations nécessaires
-    // Plus besoin de JOIN avec la table folders
-
     if (error) {
       console.error('❌ Erreur Supabase dossiers CB:', error)
       throw error
@@ -56,22 +54,55 @@ export async function GET(request: NextRequest) {
 
     console.log(`📊 ${dossiers?.length || 0} dossiers CB trouvés`)
 
+    // Récupérer les noms des dossiers de fichiers
+    const folderIds = dossiers?.map(d => d.folderid).filter(Boolean) || []
+    let folders: any[] = []
+
+    if (folderIds.length > 0) {
+      const { data: foldersData, error: foldersError } = await admin
+        .from('folders')
+        .select('id, name')
+        .in('id', folderIds)
+
+      if (foldersError) {
+        console.warn('⚠️ Erreur lors de la récupération des noms de dossiers:', foldersError)
+      } else {
+        folders = foldersData || []
+      }
+    }
+
+    // Créer un map des noms de dossiers
+    const folderNamesMap = folders.reduce((acc, folder) => {
+      acc[folder.id] = folder.name
+      return acc
+    }, {} as Record<string, string>)
+
     // Enrichir les dossiers avec les champs attendus par le CB dashboard
     const enrichedDossiers = (dossiers || []).map((dossier: any) => ({
       ...dossier,
       dateDepot: dossier.createdAt, // Mapper createdAt vers dateDepot pour compatibilité CB
       folderId: dossier.folderid, // Mapper folderid vers folderId pour compatibilité
-      foldername: dossier.numeroDossier // Utiliser numeroDossier comme nom du dossier
+      // Utiliser le vrai nom du dossier (foldername) en priorité, puis fallback basé sur l'objet
+      foldername: dossier.foldername || `Dossier ${dossier.objetOperation?.substring(0, 20)}...` || 'Sans nom',
+      // Garder aussi le nom du dossier de fichiers si nécessaire
+      folderFilesName: dossier.folderid ? (folderNamesMap[dossier.folderid] || null) : null
     }))
 
     // Log détaillé pour diagnostic
     if (enrichedDossiers && enrichedDossiers.length > 0) {
       console.log('📊 Détails des dossiers:')
       enrichedDossiers.forEach((dossier, index) => {
-        console.log(`  ${index + 1}. ${dossier.numeroDossier} - Statut: ${dossier.statut} - Créé: ${dossier.createdAt}`)
+        console.log(`  ${index + 1}. ${dossier.numeroDossier} - Statut: ${dossier.statut} - Nom: "${dossier.foldername}" - FolderId: ${dossier.folderId}`)
       })
     } else {
       console.log('📊 Aucun dossier trouvé')
+    }
+
+    console.log('📁 Dossiers de fichiers trouvés:', folders.length)
+    if (folders.length > 0) {
+      folders.forEach(folder => {
+        console.log(`  📁 ${folder.id}: "${folder.name}"`)
+      })
     }
 
     return NextResponse.json({

@@ -35,35 +35,15 @@ export async function GET(
     }
 
     try {
-      // Récupérer le document depuis la base de données
-      // Note: documentId est l'ID artificiel généré côté client
-      // On doit chercher par l'ID artificiel dans une table de mapping ou utiliser une autre logique
-      
-      // Pour l'instant, on va chercher tous les documents et trouver celui qui correspond
-      // C'est une solution temporaire - idéalement il faudrait une table de mapping
-      const { data: documents, error: docError } = await supabase
+      // Récupérer le document directement par son ID UUID
+      const { data: document, error: docError } = await supabase
         .from('documents')
         .select('id, file_name, file_path, file_type, title, created_at')
-        .order('created_at', { ascending: false })
-        .limit(1000) // Limite pour éviter de charger trop de données
-      
-      if (docError) {
-        console.error('❌ Erreur récupération documents:', docError)
-        return NextResponse.json(
-          { error: 'Erreur lors de la récupération des documents' },
-          { status: 500 }
-        )
-      }
-      
-      // Trouver le document qui correspond à l'ID artificiel
-      const document = documents?.find(doc => {
-        const timestamp = new Date(doc.created_at).getTime()
-        const expectedId = `file-${timestamp}-${documentId.split('-')[2] || ''}`
-        return expectedId === documentId
-      })
-      
-      if (!document) {
-        console.error('❌ Document non trouvé pour ID artificiel:', documentId)
+        .eq('id', documentId)
+        .single()
+
+      if (docError || !document) {
+        console.error('❌ Document non trouvé:', documentId, docError)
         return NextResponse.json(
           { error: 'Document non trouvé' },
           { status: 404 }
@@ -72,10 +52,15 @@ export async function GET(
 
       console.log('📄 Document trouvé:', document.title, document.file_name)
 
-      // Télécharger le fichier depuis Supabase Storage (dans le sous-dossier documents/)
+      // Télécharger le fichier depuis Supabase Storage
+      // Le file_path contient déjà le chemin complet depuis la racine du bucket
+      const filePath = document.file_path || document.file_name
+
+      console.log('📁 Chemin du fichier:', filePath)
+
       const { data: fileData, error: storageError } = await supabase.storage
         .from('documents')
-        .download(`documents/${document.file_name}`)
+        .download(filePath)
 
       if (storageError || !fileData) {
         console.error('❌ Erreur Supabase Storage:', storageError)

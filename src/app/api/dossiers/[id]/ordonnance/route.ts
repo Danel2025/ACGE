@@ -44,25 +44,26 @@ export async function PUT(
         posteComptableId,
         natureDocumentId,
         secretaireId,
-        folderId,
+        folderid,
         montant,
-        montantOrdonnance,
-        validatedAt,
+        montantordonnance,
+        validatedat,
         commentaires,
-        dateOrdonnancement,
-        poste_comptable:posteComptableId(*),
-        nature_document:natureDocumentId(*),
-        secretaire:secretaireId(id, name, email)
+        dateordonnancement
       `)
       .eq('id', id)
       .single()
 
     if (fetchError) {
+      console.error('❌ Erreur récupération dossier:', fetchError)
+      console.error('❌ Détails erreur:', JSON.stringify(fetchError, null, 2))
       return NextResponse.json(
-        { error: 'Dossier non trouvé' },
+        { error: 'Dossier non trouvé', details: fetchError },
         { status: 404 }
       )
     }
+
+    console.log('✅ Dossier trouvé:', dossier)
 
     // Vérifier que le dossier est validé par CB
     if (dossier.statut !== 'VALIDÉ_CB') {
@@ -125,18 +126,12 @@ export async function PUT(
       .from('dossiers')
       .update({
         statut: 'VALIDÉ_ORDONNATEUR',
-        ordonnancementComment: commentaire?.trim() || null,
-        montantOrdonnance: montant ? parseFloat(montant) : null,
-        ordonnancedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        commentaires: commentaire?.trim() || null,
+        montantordonnance: montant ? parseFloat(montant) : null,
+        dateordonnancement: new Date().toISOString()
       })
       .eq('id', id)
-      .select(`
-        *,
-        poste_comptable:posteComptableId(*),
-        nature_document:natureDocumentId(*),
-        secretaire:secretaireId(id, name, email)
-      `)
+      .select('*')
       .single()
 
     if (updateError) {

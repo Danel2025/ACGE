@@ -526,7 +526,9 @@ export default function DocumentsPage() {
 
       // Vérifier que le document existe en base avant de le supprimer
       console.log('🔍 Vérification existence document en base...')
-      const checkResponse = await fetch(`/api/documents/${originalId}`)
+      const checkResponse = await fetch(`/api/documents/${originalId}`, {
+        credentials: 'include'
+      })
 
       if (checkResponse.status === 404) {
         console.log('⚠️ Document non trouvé en base (404), suppression locale seulement')
@@ -552,7 +554,8 @@ export default function DocumentsPage() {
 
       console.log('✅ Document existe en base, tentative de suppression...')
       const response = await fetch(`/api/documents/${originalId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       })
 
       // Récupérer les données de la réponse (que ce soit succès ou échec)
@@ -645,7 +648,8 @@ export default function DocumentsPage() {
           const originalId = documentToDelete.originalId || documentToDelete.id
 
           const response = await fetch(`/api/documents/${originalId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
           })
 
           const data = await response.json()
@@ -682,7 +686,6 @@ export default function DocumentsPage() {
           <LoadingState
             isLoading={true}
             message="Chargement des fichiers..."
-            variant="spinner"
             size="lg"
             color="primary"
             showText={true}
@@ -745,28 +748,6 @@ export default function DocumentsPage() {
             <Button onClick={() => setUploadModalOpen(true)} className="w-full sm:w-auto h-8">
               <Plus className="h-4 w-4 mr-1" />
               Ajouter des fichiers
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                if (confirm('🔍 Vérifier et nettoyer les fichiers WhatsApp problématiques ?')) {
-                  try {
-                    const response = await fetch('/api/debug-whatsapp', { method: 'DELETE' })
-                    const result = await response.json()
-                    console.log('🧹 Résultat nettoyage WhatsApp:', result)
-                    alert(`🧹 Nettoyage effectué !\nSupprimé: ${result.results?.byWhatsapp?.count || 0} documents WhatsApp`)
-                    // Recharger les documents
-                    fetchDocuments()
-                  } catch (error) {
-                    console.error('❌ Erreur nettoyage WhatsApp:', error)
-                    alert('Erreur lors du nettoyage')
-                  }
-                }
-              }}
-              className="h-8"
-            >
-              🧹 Suppr. WhatsApp
             </Button>
           </div>
         }

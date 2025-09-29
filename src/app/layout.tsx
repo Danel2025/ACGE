@@ -6,6 +6,7 @@ import { LoadingProvider } from "@/components/providers/loading-provider";
 import { ThemeProvider } from "next-themes";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
+// Configuration font simplifiée pour compatibilité Turbopack
 
 export const metadata: Metadata = {
   title: "ACGE - Agence Comptable des Grandes Écoles",
@@ -67,11 +68,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LoadingProvider>
-            <ClientProviders>
-              {children}
-            </ClientProviders>
-          </LoadingProvider>
+          <ClientProviders>
+            {children}
+          </ClientProviders>
           <SpeedInsights />
           <Analytics />
         </ThemeProvider>

@@ -26,6 +26,7 @@ export async function GET(
     }
     
     // Récupérer la validation du type d'opération avec toutes les relations
+    // Prendre la plus récente validation en cas de multiples validations
     const { data: validation, error: validationError } = await admin
       .from('validations_cb')
       .select(`
@@ -35,7 +36,9 @@ export async function GET(
         user:valide_par(id, name, email)
       `)
       .eq('dossier_id', dossierId)
-      .maybeSingle() // Utiliser maybeSingle() au lieu de single()
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     if (validationError) {
       console.error('❌ Erreur récupération validation:', validationError)

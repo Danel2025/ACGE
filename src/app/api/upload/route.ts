@@ -39,12 +39,11 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🚀 === API UPLOAD SUPABASE - DÉBUT ===')
 
-    // 1. AUTHENTIFICATION
-    const token = request.cookies.get('auth-token')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '')
+    // 1. AUTHENTIFICATION (alignée sur /api/auth/me)
+    const authToken = request.cookies.get('auth-token')?.value
 
-    if (!token) {
-      console.log('❌ Pas de token d\'authentification')
+    if (!authToken) {
+      console.log('❌ Pas de cookie auth-token')
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -53,7 +52,8 @@ export async function POST(request: NextRequest) {
 
     let userId: string
     try {
-      const decoded = verify(token, process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development') as any
+      // Utiliser la même clé JWT que /api/auth/me
+      const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
       userId = decoded.userId
       console.log('✅ Utilisateur authentifié:', userId)
     } catch (error) {

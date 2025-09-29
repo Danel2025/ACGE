@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useFolders, type DossierData } from '@/hooks/use-folders'
+import { LoadingState } from '@/components/ui/loading-states'
 import { FileText, Plus, MoreHorizontal, Edit, Trash2, Eye, Send, Clock, FolderOpen, Calculator, FileCheck, CheckCircle, Loader2 } from 'lucide-react'
 import { DossierEditModal } from '@/components/ui/dossier-edit-modal'
 
@@ -239,7 +240,7 @@ export default function DossiersPage() {
   const handleOpenEditModal = (dossier: DossierData) => {
     setEditingDossier(dossier)
     setEditForm({
-      nomDossier: dossier.nomDossier || dossier.numeroDossier,
+      nomDossier: dossier.foldername || dossier.nomDossier || '',
       numeroDossier: dossier.numeroDossier,
       description: '',
       numeroNature: dossier.numeroNature,
@@ -469,46 +470,72 @@ export default function DossiersPage() {
                 </DialogHeader>
 
               {/* Progress Steps */}
-              <div className="flex items-center justify-between px-6 py-6 border-b">
-                {[
-                  { step: 1, icon: FolderOpen, label: 'Informations de base', sublabel: 'Nom et description du dossier' },
-                  { step: 2, icon: Calculator, label: 'Informations comptables', sublabel: 'Poste comptable et nature du document' },
-                  { step: 3, icon: FileCheck, label: 'Détails de l\'opération', sublabel: 'Objet et bénéficiaire' },
-                  { step: 4, icon: CheckCircle, label: 'Validation', sublabel: 'Vérification des informations' }
-                ].map(({ step, icon: Icon, label, sublabel }, index) => (
-                  <div key={step} className="flex flex-col items-center space-y-3 relative">
-                    <div className={`relative flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-200 ${
-                      currentStep === step
-                        ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-110'
-                        : currentStep > step
-                        ? 'bg-green-600 border-green-600 text-white shadow-md'
-                        : 'bg-muted border-muted-foreground/20 text-muted-foreground hover:border-muted-foreground/40'
-                    }`}>
-                      <Icon className="w-6 h-6" />
-                      {currentStep > step && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-green-600 rounded-full">
-                          <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-                      )}
-              </div>
-                    <div className="text-center max-w-[140px]">
-                      <div className={`text-sm font-medium transition-colors duration-200 ${
-                        currentStep >= step ? 'text-primary' : 'text-muted-foreground'
-                      }`}>
-                        {label}
-            </div>
-                      <div className="text-xs text-muted-foreground mt-1 leading-tight">
-                        {sublabel}
-          </div>
-              </div>
-                    {index < 3 && (
-                      <div className={`absolute top-6 left-full w-16 h-0.5 transition-colors duration-200 ${
-                        currentStep > step ? 'bg-green-600' : 'bg-muted-foreground/30'
-                      }`} style={{ transform: 'translateX(50%)' }} />
-                    )}
+              <div className="px-6 py-8 border-b bg-gradient-to-r from-muted/30 to-muted/10">
+                <div className="relative flex items-center justify-center">
+                  {/* Ligne de connexion horizontale de fond */}
+                  <div className="absolute top-6 left-0 right-0 h-0.5 bg-muted-foreground/20 rounded-full">
+                    {/* Ligne de progression animée */}
+                    <div 
+                      className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
+                      style={{ 
+                        width: currentStep > 1 ? `${((currentStep - 1) / 3) * 100}%` : '0%' 
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Conteneur des étapes avec espacement égal */}
+                  <div className="relative flex items-center justify-between w-full max-w-4xl">
+                    {[
+                      { step: 1, icon: FolderOpen, label: 'Informations de base', sublabel: 'Nom et description du dossier' },
+                      { step: 2, icon: Calculator, label: 'Informations comptables', sublabel: 'Poste comptable et nature du document' },
+                      { step: 3, icon: FileCheck, label: 'Détails de l\'opération', sublabel: 'Objet et bénéficiaire' },
+                      { step: 4, icon: CheckCircle, label: 'Validation', sublabel: 'Vérification des informations' }
+                    ].map(({ step, icon: Icon, label, sublabel }, index) => (
+                      <div key={step} className="flex flex-col items-center space-y-4 relative z-10 group">
+                        {/* Icône d'état avec animation */}
+                        <div className={`relative flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-300 group-hover:scale-105 ${
+                          currentStep === step
+                            ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-110 ring-4 ring-primary/20'
+                            : currentStep > step
+                            ? 'bg-green-600 border-green-600 text-white shadow-md hover:shadow-lg'
+                            : 'bg-background border-muted-foreground/20 text-muted-foreground hover:border-muted-foreground/40 hover:bg-muted/50'
+                        }`}>
+                          <Icon className="w-7 h-7" />
+                          {currentStep > step && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-green-600 rounded-full animate-pulse">
+                              <CheckCircle className="w-6 h-6 text-white" />
+                            </div>
+                          )}
+                          {/* Indicateur de progression */}
+                          {currentStep === step && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-ping" />
+                          )}
+                        </div>
+                        
+                        {/* Labels avec animation */}
+                        <div className="text-center max-w-[160px]">
+                          <div className={`text-sm font-semibold transition-all duration-200 ${
+                            currentStep >= step ? 'text-primary' : 'text-muted-foreground'
+                          }`}>
+                            {label}
                           </div>
-                ))}
+                          <div className="text-xs text-muted-foreground mt-1 leading-tight opacity-80">
+                            {sublabel}
+                          </div>
+                          {/* Indicateur de numéro d'étape */}
+                          <div className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-full transition-all duration-200 ${
+                            currentStep >= step 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            Étape {step}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </div>
 
               {/* Step Content */}
               <div className="py-6">
@@ -518,8 +545,7 @@ export default function DossiersPage() {
                     <div className="text-center">
                       <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <FolderOpen className="w-8 h-8 text-primary" />
-              </div>
-                      <h3 className="text-lg font-title-semibold text-foreground">Informations de base</h3>
+                      </div>
                       <p className="text-sm text-muted-foreground">Définissez le nom et la description de votre dossier</p>
                     </div>
 
@@ -556,8 +582,7 @@ export default function DossiersPage() {
                     <div className="text-center">
                       <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <Calculator className="w-8 h-8 text-primary" />
-                 </div>
-                      <h3 className="text-lg font-title-semibold text-foreground">Informations comptables</h3>
+                      </div>
                       <p className="text-sm text-muted-foreground">Renseignez les détails comptables du dossier</p>
                     </div>
 
@@ -610,7 +635,6 @@ export default function DossiersPage() {
                       <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                         <FileCheck className="w-8 h-8 text-primary" />
                       </div>
-                      <h3 className="text-lg font-title-semibold text-foreground">Détails de l'opération</h3>
                       <p className="text-sm text-muted-foreground">Complétez les informations spécifiques à l'opération</p>
                     </div>
 
@@ -660,10 +684,9 @@ export default function DossiersPage() {
                     <div className="text-center">
                       <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                         <CheckCircle className="w-8 h-8 text-green-600" />
-                   </div>
-                      <h3 className="text-lg font-title-semibold text-foreground">Validation</h3>
+                      </div>
                       <p className="text-sm text-muted-foreground">Vérifiez les informations avant de créer le dossier</p>
-                                 </div>
+                    </div>
 
                     <div className="bg-muted/30 rounded-lg p-6 space-y-4 border">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -887,7 +910,7 @@ export default function DossiersPage() {
                     {dossier.numeroDossier}
                   </TableCell>
                   <TableCell className="max-w-[200px] truncate font-medium text-blue-600">
-                    {dossier.foldername || dossier.nomDossier || dossier.numeroDossier}
+                    {dossier.foldername || dossier.nomDossier || `Dossier ${dossier.objetOperation?.substring(0, 20)}...` || 'Sans nom'}
                   </TableCell>
                   <TableCell className="max-w-[200px] truncate">
                     {dossier.objetOperation}
@@ -954,7 +977,9 @@ export default function DossiersPage() {
                           disabled={!['BROUILLON', 'REJETÉ_CB'].includes(dossier.statut) || submitting === dossier.id}
                         >
                           {submitting === dossier.id ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <div className="mr-2 h-4 w-4">
+                              <LoadingState isLoading={true} size="sm" showText={false} />
+                            </div>
                           ) : (
                             <Send className="mr-2 h-4 w-4" />
                           )}
@@ -970,7 +995,9 @@ export default function DossiersPage() {
                           disabled={!['BROUILLON', 'REJETÉ_CB'].includes(dossier.statut) || deleting === dossier.id}
                         >
                           {deleting === dossier.id ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <div className="mr-2 h-4 w-4">
+                              <LoadingState isLoading={true} size="sm" showText={false} />
+                            </div>
                           ) : (
                             <Trash2 className="mr-2 h-4 w-4" />
                           )}

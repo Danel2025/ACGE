@@ -48,7 +48,6 @@ export default function HomePage() {
         <LoadingState
           isLoading={true}
           message="Chargement..."
-          variant="spinner"
           size="lg"
           color="primary"
           showText={true}
@@ -63,7 +62,6 @@ export default function HomePage() {
       <LoadingState
         isLoading={true}
         message="Redirection..."
-        variant="spinner"
         size="lg"
         color="primary"
         showText={true}

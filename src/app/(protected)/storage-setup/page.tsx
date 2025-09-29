@@ -16,6 +16,7 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { LoadingState } from '@/components/ui/loading-states'
 
 interface DiagnosisResult {
   success: boolean
@@ -136,7 +137,9 @@ export default function StorageSetupPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <div className="w-4 h-4 mr-2">
+                    <LoadingState isLoading={true} size="sm" showText={false} />
+                  </div>
                   Diagnostic en cours...
                 </>
               ) : (
@@ -155,7 +158,9 @@ export default function StorageSetupPage() {
               >
                 {isFixing ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <div className="w-4 h-4 mr-2">
+                      <LoadingState isLoading={true} size="sm" showText={false} />
+                    </div>
                     Réparation en cours...
                   </>
                 ) : (

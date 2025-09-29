@@ -40,7 +40,14 @@
       "Bash(start http://localhost:3001/test-upload)",
       "Bash(start http://localhost:3001/upload)",
       "Bash(start http://localhost:3001/debug-folders)",
-      "Bash(start http://localhost:3002/upload)"
+      "Bash(start http://localhost:3002/upload)",
+      "Bash(start http://localhost:3001/ordonnateur-dashboard)",
+      "Bash(wmic process where ProcessId=27640 delete:*)",
+      "Bash(wmic process where ProcessId=36276 delete:*)",
+      "Bash(wmic process where ProcessId=43600 delete:*)",
+      "Bash(echo $SUPABASE_JWT_SECRET)",
+      "Bash(wmic process where ProcessId=35024 delete:*)",
+      "Bash(wmic process where ProcessId=26260 delete:*)"
     ],
     "deny": [],
     "ask": []

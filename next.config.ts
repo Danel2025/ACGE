@@ -55,8 +55,9 @@ const nextConfig: NextConfig = {
   
   // Configuration expérimentale optimisée pour Turbopack
   experimental: {
-    // Optimisations des imports de packages (sans lucide-react pour éviter les conflits)
+    // 📦 Optimisations des imports de packages - Basé sur Vercel 2025
     optimizePackageImports: [
+      // Radix UI components (40% cold start improvement)
       '@radix-ui/react-icons',
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
@@ -71,7 +72,23 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-slot',
       '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
-      '@radix-ui/react-tooltip'
+      '@radix-ui/react-tooltip',
+      // Icons - CRITICAL pour éviter les erreurs HMR
+      'lucide-react',
+      // Analytics et performance
+      '@vercel/analytics',
+      '@vercel/speed-insights',
+      // Utilitaires
+      'clsx',
+      'class-variance-authority',
+      'tailwind-merge',
+      // Date utilities
+      'date-fns',
+      // Forms
+      'react-hook-form',
+      '@hookform/resolvers',
+      // Notifications
+      'sonner',
     ],
     // Optimiser les preloads CSS
     optimizeCss: true,
@@ -79,6 +96,11 @@ const nextConfig: NextConfig = {
     optimizeServerReact: true,
     // Optimisations de mémoire
     memoryBasedWorkersCount: true,
+    // ✨ Optimisations Turbopack stables pour Next.js 15.5.4
+    // Configuration simplifiée pour éviter les conflits de parsing
+
+    // 🚀 Partial Prerendering (PPR) - À activer avec une version canary
+    // ppr: 'incremental', // Nécessite Next.js canary
   },
 
   // Configuration Turbopack
@@ -92,6 +114,15 @@ const nextConfig: NextConfig = {
       '@types': './src/types',
       '@contexts': './src/contexts',
     },
+    // Extensions de résolution pour éviter les erreurs HMR
+    resolveExtensions: [
+      '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
+      '.mjs',
+      '.json',
+    ],
   },
   
   // Packages externes pour le serveur

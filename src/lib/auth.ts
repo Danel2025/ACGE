@@ -55,7 +55,7 @@ export function createJwtToken(user: User): string {
       name: user.name,
       role: user.role
     },
-    process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development',
+    process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development',
     { expiresIn: '7d' }
   )
 }
@@ -64,7 +64,7 @@ export function verifyJwtToken(token: string): User | null {
   try {
     const decoded = jwt.verify(
       token,
-      process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development'
+      process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development'
     ) as any
 
     return {

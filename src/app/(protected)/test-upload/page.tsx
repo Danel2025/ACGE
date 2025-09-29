@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useFolders } from '@/hooks/use-folders'
+import { LoadingState } from '@/components/ui/loading-states'
 import {
   CheckCircle,
   XCircle,
@@ -141,7 +142,7 @@ export default function TestUploadPage() {
                   className="ml-auto h-7"
                 >
                   {isTestingAPI ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <LoadingState isLoading={true} size="sm" showText={false} />
                   ) : (
                     "Retester"
                   )}

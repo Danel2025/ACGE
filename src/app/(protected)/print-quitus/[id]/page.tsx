@@ -57,7 +57,6 @@ export default function PrintQuitusPage() {
           <LoadingState
             isLoading={true}
             message="Génération du quitus..."
-            variant="spinner"
             size="xl"
             color="primary"
             showText={true}

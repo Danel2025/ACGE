@@ -985,7 +985,7 @@ function CBDashboardContent() {
                     >
                       <TableCell className="font-medium text-reference">{dossier.numeroDossier}</TableCell>
                       <TableCell className="max-w-xs truncate font-medium text-blue-600">
-                        {dossier.foldername || 'N/A'}
+                        {dossier.foldername || `Dossier ${dossier.objetOperation?.substring(0, 20)}...` || 'Sans nom'}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">{dossier.objetOperation}</TableCell>
                       <TableCell>{dossier.beneficiaire}</TableCell>
@@ -1284,8 +1284,7 @@ function CBDashboardContent() {
                   <div className="space-y-2">
                     <Label className="text-sm font-title-medium">Nom du dossier</Label>
                     <p className="text-sm bg-muted p-2 rounded">
-                      {/* Correction du nom de propriété selon le type DossierComptable */}
-                      {selectedDossier.foldername || 'N/A'}
+                      {selectedDossier.foldername || `Dossier ${selectedDossier.objetOperation?.substring(0, 20)}...` || 'Sans nom'}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -1455,14 +1454,17 @@ function CBDashboardContent() {
         </Dialog>
       {/* Formulaire de validation du type d'opération */}
       {operationTypeValidationOpen && selectedDossier && (
-        <ModalBackdrop 
+        <ModalBackdrop
           className="p-4"
           onClick={() => {
             setOperationTypeValidationOpen(false)
             setSelectedDossier(null)
           }}
         >
-          <div className="w-full max-w-6xl max-h-[90vh] overflow-auto">
+          <div
+            className="w-full max-w-6xl max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <OperationTypeValidationForm
               dossierId={selectedDossier.id}
               dossierNumero={selectedDossier.numeroDossier}

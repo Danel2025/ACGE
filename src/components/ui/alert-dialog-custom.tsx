@@ -135,7 +135,6 @@ const AlertDialogCustomAction = ({
         <LoadingState
           isLoading={true}
           message={loadingText || children}
-          variant="spinner"
           size="sm"
           showText={true}
         />

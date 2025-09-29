@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (authToken) {
       try {
-        const decoded = verify(authToken, process.env.NEXTAUTH_SECRET || 'unified-jwt-secret-for-development') as any
+        const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
         const userId = decoded.userId
 
         const { data: user, error: userError } = await admin
@@ -65,17 +65,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Générer le numéro de dossier automatiquement basé sur nomDossier
-    const timestamp = Date.now().toString().slice(-6)
-    const sanitizedName = nomDossier.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()
-    const numeroDossier = `${sanitizedName}_${timestamp}`
+    // Générer le numéro de dossier automatiquement avec le format DOSS-ACGE-[date]-[id]
+    const dossierId = randomUUID()
+    const today = new Date().toISOString().split('T')[0] // Format YYYY-MM-DD
+    const shortId = dossierId.substring(0, 8) // Utiliser les 8 premiers caractères de l'UUID
+    const numeroDossier = `DOSS-ACGE-${today}-${shortId}`
 
     // Créer le dossier dans la table dossiers
     const now = new Date().toISOString()
     const { data: newDossier, error: insertError } = await admin
       .from('dossiers')
       .insert({
-        id: randomUUID(),
+        id: dossierId,
         foldername: nomDossier.trim(),
         numeroDossier,
         numeroNature: numeroNature?.trim() || '',

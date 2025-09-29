@@ -24,13 +24,16 @@ import { FileText,
   Loader2,
   X,
   Calendar,
+} from 'lucide-react'
+import { LoadingState } from '@/components/ui/loading-states'
+import {
   User,
   Folder,
   Tag,
   Eye,
   EyeOff,
   RefreshCw
- } from 'lucide-react'
+} from 'lucide-react'
 import { DocumentItem } from "@/types/document"
 import { cn } from "@/lib/utils"
 
@@ -280,8 +283,7 @@ export function DocumentPreviewModal({
               <div className="flex-1 bg-muted/20 flex items-center justify-center p-1">
                 {isLoading ? (
                   <div className="flex flex-col items-center space-y-2">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Chargement de la prévisualisation...</p>
+                    <LoadingState isLoading={true} message="Chargement de la prévisualisation..." />
                   </div>
                 ) : error ? (
                   <div className="flex flex-col items-center space-y-3 text-center p-4">
@@ -530,7 +532,9 @@ export function DocumentPreviewModal({
                         disabled={isDownloading}
                       >
                         {isDownloading ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <div className="h-4 w-4 mr-2">
+                            <LoadingState isLoading={true} size="sm" showText={false} />
+                          </div>
                         ) : (
                           <Download className="h-4 w-4 mr-2" />
                         )}

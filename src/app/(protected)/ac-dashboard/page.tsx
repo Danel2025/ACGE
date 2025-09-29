@@ -431,7 +431,6 @@ function ACDashboardContent() {
             label: "En attente",
             value: dossiers.filter(d => d.statut === 'VALIDÉ_ORDONNATEUR').length,
             icon: <Clock className="h-5 w-5 text-yellow-600" />,
-            className: "bg-yellow-100",
             subtitle: "À valider définitivement",
             tooltip: "Dossiers en attente de validation définitive par l'agent comptable",
             color: "yellow"
@@ -440,7 +439,6 @@ function ACDashboardContent() {
             label: "Validés définitivement",
             value: dossiers.filter(d => d.statut === 'VALIDÉ_DÉFINITIVEMENT').length,
             icon: <Award className="h-5 w-5 text-emerald-600" />,
-            className: "bg-emerald-100",
             subtitle: "Prêts pour traitement",
             tooltip: "Dossiers validés et prêts pour la comptabilisation",
             color: "emerald"
@@ -449,7 +447,6 @@ function ACDashboardContent() {
             label: "Terminés",
             value: dossiers.filter(d => d.statut === 'TERMINÉ').length,
             icon: <CheckCircle className="h-5 w-5 text-green-600" />,
-            className: "bg-green-100",
             subtitle: "Dossiers clôturés",
             tooltip: "Dossiers complètement traités et archivés",
             color: "green"
@@ -458,7 +455,6 @@ function ACDashboardContent() {
             label: "Total",
             value: dossiers.length,
             icon: <FileText className="h-5 w-5 text-blue-600" />,
-            className: "bg-blue-100",
             subtitle: "Tous les dossiers",
             tooltip: "Nombre total de dossiers dans le système",
             color: "blue",
@@ -468,7 +464,7 @@ function ACDashboardContent() {
         columns={4}
         size="sm"
         variant="compact"
-        colorScheme="colorful"
+        colorScheme="default"
         animated={true}
         showTooltips={true}
         className="mb-6"
