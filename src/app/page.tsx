@@ -23,21 +23,11 @@ export default function HomePage() {
     if (!user) {
       // Non authentifié, rediriger vers login avec replace
       console.log('🏠 Redirection vers login - utilisateur non connecté')
-      // Attendre un court délai pour éviter les conflits de redirection
-      const timer = setTimeout(() => {
-        router.replace('/login')
-      }, 150)
-      
-      return () => clearTimeout(timer)
+      router.replace('/login')
     } else {
       // Authentifié, rediriger vers la page appropriée selon le rôle
       console.log('🏠 Redirection basée sur le rôle:', user.role)
-      // Attendre un court délai pour éviter les conflits de redirection
-      const timer = setTimeout(() => {
-        redirectByRole(user.role, router)
-      }, 150)
-      
-      return () => clearTimeout(timer)
+      redirectByRole(user.role, router)
     }
   }, [user, isLoading, router, isMounted])
 

@@ -2,6 +2,7 @@
 import React from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
+import { useRealtimeDossiers } from '@/hooks/use-realtime-dossiers'
 import { CompactPageLayout, PageHeader, ContentSection, EmptyState } from '@/components/shared/compact-page-layout'
 import CompactStats from '@/components/shared/compact-stats'
 import { ControleurBudgetaireGuard } from '@/components/auth/role-guard'
@@ -154,6 +155,23 @@ function CBDashboardContent() {
   const [previewOpen, setPreviewOpen] = React.useState(false)
   const [editModalOpen, setEditModalOpen] = React.useState(false)
   const [shareModalOpen, setShareModalOpen] = React.useState(false)
+
+  // 🔥 Realtime: Écouter les changements de dossiers en temps réel
+  const { updates, lastUpdate, isConnected } = useRealtimeDossiers({
+    filterByStatus: ['EN_ATTENTE_CB', 'VALIDE_CB', 'REJETE_CB'],
+    onNewDossier: (dossier) => {
+      console.log('🆕 Nouveau dossier détecté:', dossier)
+      loadDossiers() // Recharger la liste
+      toast.success('Nouveau dossier disponible', {
+        description: `Dossier ${dossier.numeroDossier} créé`
+      })
+    },
+    onUpdateDossier: (dossier) => {
+      console.log('🔄 Dossier mis à jour:', dossier)
+      loadDossiers() // Recharger la liste
+    }
+  })
+
   // Vérifier si l'utilisateur est autorisé à accéder au dashboard CB
   React.useEffect(() => {
     if (user?.role && !isRoleAuthorizedForDashboard(user.role, 'cb')) {
@@ -163,6 +181,7 @@ function CBDashboardContent() {
       router.replace(redirectPath)
     }
   }, [user, router])
+
   // Charger tous les dossiers (pas seulement ceux en attente)
   const loadDossiers = React.useCallback(async () => {
     try {
@@ -800,11 +819,21 @@ function CBDashboardContent() {
     <CompactPageLayout>
       <PageHeader
         title="Dashboard Contrôleur Budgétaire"
-        subtitle="Validez ou rejetez les dossiers en attente"
+        subtitle={
+          <div className="flex items-center gap-2">
+            <span>Validez ou rejetez les dossiers en attente</span>
+            {isConnected && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <span className="h-2 w-2 bg-green-500 rounded-full mr-1 animate-pulse" />
+                En temps réel
+              </Badge>
+            )}
+          </div>
+        }
         actions={
-          <Button 
-            variant="outline" 
-            onClick={loadDossiers} 
+          <Button
+            variant="outline"
+            onClick={loadDossiers}
             className="w-full sm:w-auto h-8"
           >
             <RefreshCw className="mr-2 h-5 w-5" />

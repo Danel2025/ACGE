@@ -3,6 +3,8 @@
 import React from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
+import { useRealtimeDossiers } from '@/hooks/use-realtime-dossiers'
+import { toast } from 'sonner'
 import { CompactPageLayout, PageHeader, ContentSection, EmptyState } from '@/components/shared/compact-page-layout'
 import CompactStats from '@/components/shared/compact-stats'
 import { AgentComptableGuard } from '@/components/auth/role-guard'
@@ -13,6 +15,7 @@ import { RefreshCw, Info } from 'lucide-react'
 import { RapportVerification } from '@/components/ac/rapport-verification'
 import { QuitusDisplay } from '@/components/ac/quitus-display'
 import { ACStatusNavigation } from '@/components/ac/ac-status-navigation'
+import { DossierContentModal } from '@/components/ui/dossier-content-modal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -113,13 +116,32 @@ function ACDashboardContent() {
   // États pour le rapport de vérification
   const [rapportOpen, setRapportOpen] = React.useState(false)
   const [validationDefinitiveOpen, setValidationDefinitiveOpen] = React.useState(false)
-  
+
+  // État pour la modal de détails
+  const [detailsOpen, setDetailsOpen] = React.useState(false)
+
   // États pour le quitus
   const [quitusOpen, setQuitusOpen] = React.useState(false)
   const [quitusData, setQuitusData] = React.useState<any>(null)
   
   // État pour le filtre de statut
-  const [statusFilter, setStatusFilter] = React.useState<'all' | 'en_attente' | 'valides_definitivement' | 'payes' | 'recettes' | 'termines'>('all')
+  const [statusFilter, setStatusFilter] = React.useState<'all' | 'en_attente' | 'valides_definitivement' | 'termines'>('all')
+
+  // 🔥 Realtime: Écouter les changements de dossiers en temps réel
+  const { updates, lastUpdate, isConnected } = useRealtimeDossiers({
+    filterByStatus: ['ORDONNE', 'EN_ATTENTE_COMPTABILISATION', 'VALIDE_DEFINITIVEMENT', 'TERMINE', 'REJETE_AC'],
+    onNewDossier: (dossier) => {
+      console.log('🆕 Nouveau dossier pour comptabilisation:', dossier)
+      loadDossiers()
+      toast.success('Nouveau dossier à traiter', {
+        description: `Dossier ${dossier.numeroDossier} ordonné`
+      })
+    },
+    onUpdateDossier: (dossier) => {
+      console.log('🔄 Dossier mis à jour:', dossier)
+      loadDossiers()
+    }
+  })
 
   // Vérifier si l'utilisateur est autorisé à accéder au dashboard AC
   React.useEffect(() => {
@@ -136,11 +158,19 @@ function ACDashboardContent() {
     try {
       setIsLoading(true)
       setError('')
-      
+
+      // 🔄 Forcer no-cache pour toujours récupérer les données fraîches
       const response = await fetch('/api/dossiers/ac-all', {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store', // Next.js 15: ne JAMAIS cacher cette requête
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setDossiers(data.dossiers || [])
@@ -273,8 +303,10 @@ function ACDashboardContent() {
         resetForm()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Erreur lors de la validation définitive')
+        const errorMessage = errorData.error || errorData.details || 'Erreur lors de la validation définitive'
+        setError(errorMessage)
         console.error('❌ Erreur validation définitive:', errorData)
+        alert(`Erreur: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Erreur validation définitive:', error)
@@ -376,7 +408,7 @@ function ACDashboardContent() {
               onClick={() => {
                 console.log('🔄 Debug: test des permissions utilisateur')
                 console.log('User role:', user?.role)
-                console.log('User permissions:', user?.permissions)
+                console.log('User email:', user?.email)
               }}
               className="h-8"
             >
@@ -482,8 +514,6 @@ function ACDashboardContent() {
           switch (statusFilter) {
             case 'en_attente': return 'Dossiers en attente de validation définitive'
             case 'valides_definitivement': return 'Dossiers validés définitivement'
-            case 'payes': return 'Dossiers payés'
-            case 'recettes': return 'Recettes enregistrées'
             case 'termines': return 'Dossiers terminés'
             default: return 'Tous les dossiers'
           }
@@ -511,7 +541,15 @@ function ACDashboardContent() {
                 </TableHeader>
                 <TableBody>
                   {filteredDossiers.map((dossier) => (
-                    <TableRow key={dossier.id}>
+                    <TableRow
+                      key={dossier.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => {
+                        console.log('👁️ Clic sur dossier:', dossier.numeroDossier)
+                        setSelectedDossier(dossier)
+                        setDetailsOpen(true)
+                      }}
+                    >
                       <TableCell className="font-medium text-reference">{dossier.numeroDossier}</TableCell>
                       <TableCell className="max-w-xs truncate">{dossier.objetOperation}</TableCell>
                       <TableCell>{dossier.beneficiaire}</TableCell>
@@ -535,8 +573,9 @@ function ACDashboardContent() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => {
                               e.stopPropagation()
+                              console.log('👁️ Ouverture des détails du dossier:', dossier.numeroDossier)
                               setSelectedDossier(dossier)
-                              // Ici on pourrait ouvrir une modal de détails
+                              setDetailsOpen(true)
                             }}>
                               <Eye className="mr-2 h-5 w-5" />
                               Voir détails
@@ -743,6 +782,16 @@ function ACDashboardContent() {
             </div>
           </DialogContent>
         </Dialog>
+
+      {/* Modal de détails du dossier */}
+      <DossierContentModal
+        dossier={selectedDossier}
+        isOpen={detailsOpen}
+        onClose={() => {
+          setDetailsOpen(false)
+          setSelectedDossier(null)
+        }}
+      />
     </CompactPageLayout>
   )
 }

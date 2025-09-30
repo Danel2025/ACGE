@@ -237,18 +237,21 @@ function analyserIncoherences(dossier: any, controlesCB: any[], verificationsOrd
   }
 
   // Vérifier la cohérence temporelle
-  if (dossier.ordonnancedAt && dossier.validatedAt) {
-    const dateValidation = new Date(dossier.validatedAt)
-    const dateOrdonnancement = new Date(dossier.ordonnancedAt)
-    
+  const validationDate = dossier.validatedCBAt || dossier.validated_cb_at || dossier.validatedat
+  const ordonnancementDate = dossier.ordonnancedAt || dossier.ordonnanced_at
+
+  if (ordonnancementDate && validationDate) {
+    const dateValidation = new Date(validationDate)
+    const dateOrdonnancement = new Date(ordonnancementDate)
+
     if (dateOrdonnancement < dateValidation) {
       incoherences.push({
         type: 'TEMPOREL',
         severite: 'HAUTE',
         description: 'Date d\'ordonnancement antérieure à la date de validation CB',
         details: {
-          dateValidation: dossier.validatedAt,
-          dateOrdonnancement: dossier.ordonnancedAt
+          dateValidation: validationDate,
+          dateOrdonnancement: ordonnancementDate
         }
       })
     }

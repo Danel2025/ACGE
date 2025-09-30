@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 import { useModal } from '@/contexts/modal-context'
 import { Search, Settings, LogOut, User, Menu, X, Bell, Info } from 'lucide-react'
@@ -27,8 +27,17 @@ export function Header({ onOpenMenu }: { onOpenMenu?: () => void }) {
   const { hideHeader } = useModal()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
-  const { stats: notificationStats } = useNotificationsContext()
+  const { stats: notificationStats, refreshNotifications } = useNotificationsContext()
   const { isLoggingOut, startLogout, completeLogout } = useLogoutTransition()
+
+  // Forcer le rendu quand les stats changent
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (notificationStats) {
+      setUnreadCount(notificationStats.unreadCount)
+    }
+  }, [notificationStats])
 
   // Fonction de test pour la redirection
   const testRedirection = async () => {
@@ -196,9 +205,9 @@ export function Header({ onOpenMenu }: { onOpenMenu?: () => void }) {
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
-            {notificationStats && notificationStats.unreadCount > 0 && (
+            {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {notificationStats.unreadCount}
+                {unreadCount}
               </span>
             )}
           </Button>

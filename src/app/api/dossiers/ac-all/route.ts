@@ -3,12 +3,16 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 
 /**
  * 📊 API DOSSIERS AC ALL - ACGE
- * 
+ *
  * Récupère tous les dossiers pertinents pour l'Agent Comptable :
  * - VALIDÉ_ORDONNATEUR : En attente de validation définitive
  * - VALIDÉ_DÉFINITIVEMENT : Validés définitivement
  * - TERMINÉ : Terminés
  */
+
+// Forcer le mode dynamique (pas de cache statique)
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export async function GET(request: NextRequest) {
   try {
     console.log('📊 Récupération de tous les dossiers AC')
@@ -61,12 +65,21 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`📊 ${dossiers?.length || 0} dossiers AC trouvés`)
-    
-    return NextResponse.json({ 
-      success: true, 
-      dossiers: dossiers || [],
-      count: dossiers?.length || 0
-    })
+
+    return NextResponse.json(
+      {
+        success: true,
+        dossiers: dossiers || [],
+        count: dossiers?.length || 0
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate',
+          'CDN-Cache-Control': 'no-store',
+          'Vercel-CDN-Cache-Control': 'no-store'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('❌ Erreur lors de la récupération des dossiers AC:', error)

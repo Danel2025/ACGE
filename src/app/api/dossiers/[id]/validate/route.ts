@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { NotificationsByRole } from '@/lib/notifications-by-role'
+import { CacheRevalidation } from '@/lib/revalidation-utils'
+import { verify } from 'jsonwebtoken'
 
 /**
  * ✅ API VALIDATION DOSSIER CB - ACGE
- * 
+ *
  * Valide un dossier par le Contrôleur Budgétaire
  */
+
+// Forcer le mode dynamique
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,7 +20,7 @@ export async function PUT(
   try {
     const resolvedParams = await params
     const id = resolvedParams.id
-    
+
     console.log('✅ Validation dossier CB:', id)
     console.log('🔍 Debug: Route de validation mise à jour avec logs détaillés')
 
@@ -25,6 +31,43 @@ export async function PUT(
       return NextResponse.json(
         { error: 'Service de base de données indisponible' },
         { status: 503 }
+      )
+    }
+
+    // 🔐 Récupérer l'utilisateur depuis le JWT
+    const authToken = request.cookies.get('auth-token')?.value
+
+    if (!authToken) {
+      console.error('❌ Cookie auth-token manquant')
+      return NextResponse.json(
+        { error: 'Non authentifié - Token manquant' },
+        { status: 401 }
+      )
+    }
+
+    let userId: string
+    let userRole: string
+
+    try {
+      const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
+      userId = decoded.userId
+      userRole = decoded.role
+
+      console.log('🔐 JWT décodé:', { userId, role: userRole })
+
+      // Vérifier que l'utilisateur est un CB
+      if (userRole !== 'CONTROLEUR_BUDGETAIRE' && userRole !== 'ADMIN') {
+        console.error('❌ Rôle non autorisé:', userRole)
+        return NextResponse.json(
+          { error: 'Seuls les contrôleurs budgétaires peuvent valider des dossiers' },
+          { status: 403 }
+        )
+      }
+    } catch (jwtError) {
+      console.error('❌ JWT invalide:', jwtError)
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
       )
     }
 
@@ -163,7 +206,15 @@ export async function PUT(
     }
 
     console.log('✅ Dossier validé avec succès:', updatedDossier.numeroDossier)
-    
+
+    // 🔄 REVALIDATION DU CACHE
+    try {
+      await CacheRevalidation.revalidateValidationCB(id)
+      console.log('🔄 Cache invalidé après validation CB')
+    } catch (revalidateError) {
+      console.warn('⚠️ Erreur revalidation cache:', revalidateError)
+    }
+
     // 🔔 NOTIFICATIONS INTELLIGENTES PAR RÔLE
     try {
       // Notifier la secrétaire
@@ -215,12 +266,19 @@ export async function PUT(
       console.warn('⚠️ Erreur envoi notifications:', notificationError)
       // Ne pas faire échouer la validation pour une erreur de notification
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      dossier: updatedDossier,
-      message: 'Dossier validé avec succès'
-    })
+
+    return NextResponse.json(
+      {
+        success: true,
+        dossier: updatedDossier,
+        message: 'Dossier validé avec succès'
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('❌ Erreur lors de la validation du dossier:', error)

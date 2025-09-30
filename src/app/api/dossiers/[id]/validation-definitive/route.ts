@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { NotificationsByRole } from '@/lib/notifications-by-role'
+import { CacheRevalidation } from '@/lib/revalidation-utils'
 
 /**
  * 🔒 API VALIDATION DÉFINITIVE - ACGE
- * 
+ *
  * Validation définitive d'un dossier par l'Agent Comptable
  * après vérification du rapport de vérification
  */
+
+// Forcer le mode dynamique (pas de cache statique)
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -62,11 +67,37 @@ export async function PUT(
       .from('syntheses_verifications_ordonnateur')
       .select('*')
       .eq('dossier_id', id)
-      .single()
-    
-    if (syntheseError || !syntheseOrdonnateur || syntheseOrdonnateur.statut !== 'VALIDÉ') {
+      .maybeSingle()
+
+    if (syntheseError) {
+      console.error('❌ Erreur lors de la récupération de la synthèse ordonnateur:', syntheseError)
       return NextResponse.json(
-        { error: 'Les vérifications ordonnateur doivent être complètes et validées' },
+        {
+          error: 'Erreur lors de la vérification des validations ordonnateur',
+          details: syntheseError.message || 'Erreur inconnue'
+        },
+        { status: 500 }
+      )
+    }
+
+    if (!syntheseOrdonnateur) {
+      console.error('❌ Synthèse ordonnateur manquante pour le dossier:', id)
+      return NextResponse.json(
+        {
+          error: 'Les vérifications ordonnateur doivent être effectuées avant la validation définitive',
+          details: 'Aucune synthèse de vérifications trouvée pour ce dossier'
+        },
+        { status: 400 }
+      )
+    }
+
+    if (syntheseOrdonnateur.statut !== 'VALIDÉ') {
+      console.error('❌ Synthèse ordonnateur non validée:', syntheseOrdonnateur.statut)
+      return NextResponse.json(
+        {
+          error: `Les vérifications ordonnateur doivent être toutes validées (statut actuel: ${syntheseOrdonnateur.statut})`,
+          details: `${syntheseOrdonnateur.verifications_rejetees || 0} vérification(s) rejetée(s) sur ${syntheseOrdonnateur.total_verifications || 0}`
+        },
         { status: 400 }
       )
     }
@@ -98,11 +129,20 @@ export async function PUT(
     }
 
     console.log('🔒 Dossier validé définitivement avec succès:', updatedDossier.numeroDossier)
-    
+
+    // 🔄 REVALIDATION DU CACHE - Invalider les caches concernés
+    try {
+      await CacheRevalidation.revalidateValidationDefinitive(id)
+      console.log('🔄 Cache Next.js invalidé après validation définitive')
+    } catch (revalidateError) {
+      console.warn('⚠️ Erreur lors de la revalidation du cache:', revalidateError)
+      // Ne pas faire échouer la validation pour un problème de cache
+    }
+
     // 🔔 NOTIFICATIONS INTELLIGENTES PAR RÔLE
     try {
       const notificationService = new NotificationsByRole()
-      
+
       await notificationService.notifyValidationDefinitive({
         dossierId: updatedDossier.id,
         numeroDossier: updatedDossier.numeroDossier,
@@ -113,18 +153,25 @@ export async function PUT(
         commentaire: commentaire?.trim() || null,
         validatedAt: updatedDossier.validatedDefinitivelyAt
       })
-      
+
       console.log('🔔 Notifications de validation définitive envoyées')
     } catch (notificationError) {
       console.warn('⚠️ Erreur notifications validation définitive:', notificationError)
       // Ne pas faire échouer la validation pour un problème de notification
     }
 
-    return NextResponse.json({
-      success: true,
-      message: `Dossier ${updatedDossier.numeroDossier} validé définitivement avec succès`,
-      dossier: updatedDossier
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Dossier ${updatedDossier.numeroDossier} validé définitivement avec succès`,
+        dossier: updatedDossier
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('❌ Erreur validation définitive:', error)

@@ -18,15 +18,10 @@ export default function ProtectedLayout({
 
   useEffect(() => {
     if (!isMounted || isLoading) return
-    
+
     if (!user) {
-      // Utiliser replace pour éviter l'historique et les transitions
-      // Attendre un court délai pour éviter les conflits de redirection
-      const timer = setTimeout(() => {
-        router.replace('/login')
-      }, 100)
-      
-      return () => clearTimeout(timer)
+      // Redirection immédiate vers login si non authentifié
+      router.replace('/login')
     }
   }, [user, isLoading, router, isMounted])
 

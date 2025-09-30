@@ -369,6 +369,18 @@ export default function NotificationsPage() {
     console.log(`${count} notifications marquées comme lues`)
   }
 
+  const handleNotificationClick = async (notification: any) => {
+    // Marquer comme lu si non lu
+    if (!notification.isRead) {
+      await markAsRead(notification.id)
+    }
+
+    // Rediriger vers l'action si disponible
+    if (notification.action_url) {
+      router.push(notification.action_url)
+    }
+  }
+
   if (error) {
     return (
       <MainLayout>
@@ -428,8 +440,8 @@ export default function NotificationsPage() {
           />
         )}
 
-        {/* Header compact */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        {/* Header compact avec ligne de séparation subtile */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pb-4 border-b border-gray-100">
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-title-bold text-primary">Notifications</h1>
             <p className="text-sm text-muted-foreground">
@@ -500,56 +512,100 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* Statistiques compactes */}
+        {/* Filtres rapides en ligne */}
         {stats && (
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <Card className="p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Total</p>
-                  <p className="text-lg font-bold">{stats.totalNotifications}</p>
-                </div>
-                <Bell className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Non lues</p>
-                  <p className="text-lg font-bold text-blue-600">{stats.unreadCount}</p>
-                </div>
-                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Priorité élevée</p>
-                  <p className="text-lg font-bold text-orange-600">{stats.highPriorityCount}</p>
-                </div>
+          <div className="border-b border-gray-100 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-700">Filtres rapides</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStatusFilter('ALL')
+                  setPriorityFilter('ALL')
+                  setTypeFilter('ALL')
+                  setSearchTerm('')
+                }}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Tout afficher
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant={statusFilter === 'ALL' && priorityFilter === 'ALL' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setStatusFilter('ALL')
+                  setPriorityFilter('ALL')
+                  setTypeFilter('ALL')
+                  setSearchTerm('')
+                }}
+                className="gap-2 h-9"
+              >
+                <Bell className="h-4 w-4" />
+                <span className="font-medium">Toutes</span>
+                <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {stats.totalNotifications}
+                </span>
+              </Button>
+
+              <Button
+                variant={statusFilter === 'UNREAD' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter(statusFilter === 'UNREAD' ? 'ALL' : 'UNREAD')}
+                className={`gap-2 h-9 ${
+                  statusFilter === 'UNREAD' ? 'bg-blue-50 border-blue-200 text-blue-700' : ''
+                }`}
+              >
+                <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                <span className="font-medium">Non lues</span>
+                <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {stats.unreadCount}
+                </span>
+              </Button>
+
+              <Button
+                variant={priorityFilter === 'HIGH' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPriorityFilter(priorityFilter === 'HIGH' ? 'ALL' : 'HIGH')}
+                className={`gap-2 h-9 ${
+                  priorityFilter === 'HIGH' ? 'bg-orange-50 border-orange-200 text-orange-700' : ''
+                }`}
+              >
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
-              </div>
-            </Card>
-            <Card className="p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Urgentes</p>
-                  <p className="text-lg font-bold text-red-600">{stats.urgentCount}</p>
-                </div>
+                <span className="font-medium">Élevée</span>
+                <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {stats.highPriorityCount}
+                </span>
+              </Button>
+
+              <Button
+                variant={priorityFilter === 'URGENT' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPriorityFilter(priorityFilter === 'URGENT' ? 'ALL' : 'URGENT')}
+                className={`gap-2 h-9 ${
+                  priorityFilter === 'URGENT' ? 'bg-red-50 border-red-200 text-red-700' : ''
+                }`}
+              >
                 <XCircle className="h-4 w-4 text-red-500" />
-              </div>
-            </Card>
+                <span className="font-medium">Urgentes</span>
+                <span className="bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {stats.urgentCount}
+                </span>
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Filtres compacts */}
+        {/* Filtres compacts avec bordure subtile */}
         {showFilters && (
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-4 border border-gray-100">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
               <h3 className="text-sm font-title-medium">Filtres</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowFilters(false)}
               >
                 <X className="h-4 w-4" />
@@ -712,8 +768,8 @@ export default function NotificationsPage() {
           </Card>
         )}
 
-        {/* Actions de sélection */}
-        <div className="flex items-center justify-end mb-3">
+        {/* Actions de sélection avec ligne de séparation */}
+        <div className="flex items-center justify-end mb-3 pb-3 border-b border-gray-100">
           <Button
             variant="outline"
             size="sm"
@@ -778,13 +834,14 @@ export default function NotificationsPage() {
                         return (
                           <div
                             key={notification.id}
-                            className={`flex items-start space-x-3 p-3 hover:bg-muted/50 transition-colors ${
-                              !notification.isRead ? 'bg-blue-50/50 border-l-2 border-l-blue-500' : ''
-                            } ${isSelected ? 'bg-blue-100' : ''} ${
+                            className={`flex items-start space-x-3 p-3 hover:bg-muted/50 transition-all duration-200 cursor-pointer border-b border-gray-50 last:border-b-0 ${
+                              !notification.isRead ? 'bg-blue-50/30 border-l-2 border-l-blue-500' : ''
+                            } ${isSelected ? 'bg-blue-100 border-blue-200' : ''} ${
                               viewMode === 'compact' ? 'py-2' : ''
                             }`}
+                            onClick={() => handleNotificationClick(notification)}
                           >
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={() => handleSelectNotification(notification.id)}
@@ -828,14 +885,15 @@ export default function NotificationsPage() {
                                     )}
                                   </div>
                                 </div>
-                                
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                      <MoreHorizontal className="h-3 w-3" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
+
+                                <div onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                        <MoreHorizontal className="h-3 w-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
                                     {!notification.isRead && (
                                       <DropdownMenuItem onClick={() => handleMarkAsRead(notification.id)}>
                                         <Eye className="mr-2 h-3 w-3" />
@@ -848,16 +906,17 @@ export default function NotificationsPage() {
                                         {notification.action_label || 'Voir'}
                                       </DropdownMenuItem>
                                     )}
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem 
-                                      className="text-red-600"
-                                      onClick={() => deleteNotification(notification.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-3 w-3" />
-                                      Supprimer
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="text-red-600"
+                                        onClick={() => deleteNotification(notification.id)}
+                                      >
+                                        <Trash2 className="mr-2 h-3 w-3" />
+                                        Supprimer
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -870,9 +929,9 @@ export default function NotificationsPage() {
             )}
         </div>
 
-        {/* Pagination compacte */}
+        {/* Pagination compacte avec bordure subtile */}
         {viewMode !== 'grouped' && totalPages > 1 && (
-          <Card className="p-3">
+          <Card className="p-3 border-t border-gray-100 bg-gray-50/50">
             <div className="flex items-center justify-between">
               <div className="text-xs text-muted-foreground">
                 {startIndex + 1}-{Math.min(endIndex, filteredAndSortedNotifications.length)} sur {filteredAndSortedNotifications.length}
@@ -924,8 +983,8 @@ export default function NotificationsPage() {
           </Card>
         )}
 
-        {/* Raccourcis clavier compacts */}
-        <Card className="bg-muted/30 p-3">
+        {/* Raccourcis clavier avec bordure subtile */}
+        <Card className="bg-muted/30 p-3 border-t border-gray-100">
           <div className="text-xs text-muted-foreground">
             <strong>Raccourcis :</strong> Ctrl+A (Sélectionner), Ctrl+R (Actualiser), Ctrl+E (Exporter)
           </div>

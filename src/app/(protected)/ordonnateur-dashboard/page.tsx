@@ -3,6 +3,7 @@
 import React from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
+import { useRealtimeDossiers } from '@/hooks/use-realtime-dossiers'
 import { createNotification } from '@/lib/notifications'
 import { getRoleRedirectPath, isRoleAuthorizedForDashboard } from '@/lib/role-redirect'
 import { Button } from '@/components/ui/button'
@@ -51,6 +52,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
 import { 
   CheckCircle, 
   XCircle, 
@@ -135,8 +137,22 @@ function OrdonnateurDashboardContent() {
   const [verificationsMode, setVerificationsMode] = React.useState<'validation' | 'consultation'>('validation')
   const [verificationsStatus, setVerificationsStatus] = React.useState<Record<string, { completed: boolean, status: 'VALIDÉ' | 'EN_COURS' | 'REJETÉ' | null }>>({})
   const [verificationsSummary, setVerificationsSummary] = React.useState<any>(null)
-  
-  
+
+  // 🔥 Realtime: Écouter les changements de dossiers en temps réel
+  const { updates, lastUpdate, isConnected } = useRealtimeDossiers({
+    filterByStatus: ['VALIDE_CB', 'EN_ATTENTE_ORDONNANCEMENT', 'ORDONNE', 'REJETE_ORDONNATEUR'],
+    onNewDossier: (dossier) => {
+      console.log('🆕 Nouveau dossier pour ordonnancement:', dossier)
+      loadDossiers()
+      toast.success('Nouveau dossier à ordonner', {
+        description: `Dossier ${dossier.numeroDossier} disponible`
+      })
+    },
+    onUpdateDossier: (dossier) => {
+      console.log('🔄 Dossier mis à jour:', dossier)
+      loadDossiers()
+    }
+  })
 
   // Vérifier si l'utilisateur est autorisé à accéder au dashboard Ordonnateur
   React.useEffect(() => {

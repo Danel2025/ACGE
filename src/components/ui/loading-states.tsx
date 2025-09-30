@@ -79,8 +79,11 @@ export function LoadingState({
       case 'progress':
         return (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`relative flex items-center justify-center`} style={{
+                width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
+                height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
+              }}>
                 {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                   <div
                     key={i}
@@ -88,7 +91,7 @@ export function LoadingState({
                     style={{
                       left: '50%',
                       top: '50%',
-                      transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                      transformOrigin: `50% ${size === 'sm' ? '8px' : size === 'md' ? '12px' : size === 'lg' ? '16px' : '20px'}`,
                       transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
                       animationDelay: `${i * 0.1}s`,
                       animationDuration: '1s'
@@ -112,9 +115,12 @@ export function LoadingState({
       case 'pulse':
         return (
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className={`${sizeClasses[size]} rounded-full bg-primary/20 animate-pulse`}></div>
-              <div className={`${sizeClasses[size]} rounded-full bg-primary/40 animate-pulse absolute inset-0`} 
+            <div className={`relative flex items-center justify-center`} style={{
+              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
+              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
+            }}>
+              <div className="w-full h-full rounded-full bg-primary/20 animate-pulse"></div>
+              <div className="w-full h-full rounded-full bg-primary/40 animate-pulse absolute inset-0"
                    style={{ animationDelay: '0.5s' }}></div>
             </div>
             {showText && <span className={textClass}>{message}</span>}
@@ -123,24 +129,21 @@ export function LoadingState({
 
 
       case 'bars':
-        const barsSize = size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'
-        const barCount = size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10
-        const barWidth = size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'
-        const barHeight = size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'
-        const radius = size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'
-
         return (
           <div className="flex items-center gap-3">
-            <div className={`relative ${barsSize}`}>
-              {[...Array(barCount)].map((_, i) => (
+            <div className={`relative flex items-center justify-center`} style={{
+              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
+              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
+            }}>
+              {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                 <div
                   key={i}
-                  className={`absolute ${barWidth} ${barHeight} bg-primary rounded-full animate-pulse`}
+                  className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : size === 'lg' ? 'w-0.5' : 'w-1'} ${size === 'sm' ? 'h-1.5' : size === 'md' ? 'h-2' : size === 'lg' ? 'h-2.5' : 'h-3'} bg-primary rounded-full animate-pulse`}
                   style={{
                     left: '50%',
                     top: '50%',
-                    transformOrigin: `50% ${radius}`,
-                    transform: `translate(-50%, -50%) rotate(${i * (360 / barCount)}deg)`,
+                    transformOrigin: `50% ${size === 'sm' ? '8px' : size === 'md' ? '12px' : size === 'lg' ? '16px' : '20px'}`,
+                    transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '1s'
                   }}
@@ -198,7 +201,10 @@ export function LoadingState({
       case 'spinner':
         return (
           <div className="flex items-center gap-3">
-            <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+            <div className={`relative flex items-center justify-center`} style={{
+              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
+              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
+            }}>
               {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                 <div
                   key={i}
@@ -206,7 +212,7 @@ export function LoadingState({
                   style={{
                     left: '50%',
                     top: '50%',
-                    transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                    transformOrigin: `50% ${size === 'sm' ? '8px' : size === 'md' ? '12px' : size === 'lg' ? '16px' : '20px'}`,
                     transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '1s'
@@ -222,7 +228,10 @@ export function LoadingState({
         // Default case for 'bars' variant and any other cases - same as explicit 'bars' case
         return (
           <div className="flex items-center gap-3">
-            <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-5 h-5' : size === 'lg' ? 'w-6 h-6' : 'w-8 h-8'}`}>
+            <div className={`relative flex items-center justify-center`} style={{
+              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
+              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
+            }}>
               {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                 <div
                   key={i}
@@ -230,7 +239,7 @@ export function LoadingState({
                   style={{
                     left: '50%',
                     top: '50%',
-                    transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '10px' : size === 'lg' ? '12px' : '16px'}`,
+                    transformOrigin: `50% ${size === 'sm' ? '8px' : size === 'md' ? '12px' : size === 'lg' ? '16px' : '20px'}`,
                     transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10))}deg)`,
                     animationDelay: `${i * 0.1}s`,
                     animationDuration: '1s'
@@ -245,7 +254,7 @@ export function LoadingState({
   }
 
   return (
-    <div className={`flex items-center justify-center p-4 ${className}`}>
+    <div className={`p-4 ${className}`}>
       {renderLoadingContent()}
     </div>
   )
@@ -345,7 +354,7 @@ export function ActionLoadingState({
     switch (state) {
       case 'loading':
         return (
-          <div className={`relative w-4 h-4`}>
+          <div className="relative w-4 h-4 flex items-center justify-center">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
@@ -529,7 +538,7 @@ export function ButtonLoading({
         )
       case 'spinner':
         return (
-          <div className={`relative ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'}`}>
+          <div className={`relative ${sizeClasses[size]} flex items-center justify-center`}>
             {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : 8)].map((_, i) => (
               <div
                 key={i}
@@ -556,23 +565,17 @@ export function ButtonLoading({
         return <LogIn className={iconClass} />
       default:
         // Default case for 'bars' variant and any other cases
-        const barsIconSize = size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'
-        const barIconCount = size === 'sm' ? 6 : size === 'md' ? 8 : 8
-        const barIconWidth = size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : 'w-0.5'
-        const barIconHeight = size === 'sm' ? 'h-1' : size === 'md' ? 'h-1.5' : 'h-2'
-        const iconRadius = size === 'sm' ? '6px' : size === 'md' ? '8px' : '10px'
-
         return (
-          <div className={`relative ${barsIconSize}`}>
-            {[...Array(barIconCount)].map((_, i) => (
+          <div className={`relative ${sizeClasses[size]} flex items-center justify-center`}>
+            {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : 8)].map((_, i) => (
               <div
                 key={i}
-                className={`absolute ${barIconWidth} ${barIconHeight} bg-current rounded-full animate-pulse`}
+                className={`absolute ${size === 'sm' ? 'w-0.5' : size === 'md' ? 'w-0.5' : 'w-0.5'} ${size === 'sm' ? 'h-1' : size === 'md' ? 'h-1.5' : 'h-2'} bg-current rounded-full animate-pulse`}
                 style={{
                   left: '50%',
                   top: '50%',
-                  transformOrigin: `50% ${iconRadius}`,
-                  transform: `translate(-50%, -50%) rotate(${i * (360 / barIconCount)}deg)`,
+                  transformOrigin: `50% ${size === 'sm' ? '6px' : size === 'md' ? '8px' : '10px'}`,
+                  transform: `translate(-50%, -50%) rotate(${i * (360 / (size === 'sm' ? 6 : size === 'md' ? 8 : 8))}deg)`,
                   animationDelay: `${i * 0.125}s`,
                   animationDuration: '1s'
                 }}

@@ -134,38 +134,27 @@ const nextConfig: NextConfig = {
   // Configuration des headers pour optimiser les preloads
   async headers() {
     return [
-      // Headers généraux pour toutes les pages
+      // ===== ORDRE IMPORTANT : Règles spécifiques d'abord =====
+
+      // 1. Assets statiques immuables (cache très long)
       {
-        source: '/(.*)',
+        source: '/_next/static/(.*)',
         headers: [
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
-          },
-          // Headers de performance optimisés
-          {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'
+            value: 'public, max-age=31536000, immutable'
           }
         ],
       },
-      // Headers pour les images statiques (cache long)
+      {
+        source: '/fonts/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ],
+      },
       {
         source: '/logo-tresor-public.svg',
         headers: [
@@ -188,33 +177,68 @@ const nextConfig: NextConfig = {
           }
         ],
       },
-      // Headers pour les polices (cache long)
+
+      // 2. Routes API : PAS DE CACHE (crucial pour les données en temps réel)
       {
-        source: '/fonts/(.*)',
+        source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
+            value: 'private, no-cache, no-store, max-age=0, must-revalidate'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
           }
         ],
       },
-      // Headers pour les assets Next.js (cache long)
+
+      // 3. Pages dynamiques protégées : Pas de cache
       {
-        source: '/_next/static/(.*)',
+        source: '/(dashboard|cb-dashboard|ordonnateur-dashboard|ac-dashboard|folders|documents|users)/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
+            value: 'private, no-cache, no-store, max-age=0, must-revalidate'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
           }
         ],
       },
-      // Headers pour les pages HTML (cache court avec revalidation)
+
+      // 4. Pages HTML générales : Cache court avec revalidation
       {
-        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        source: '/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400'
+            value: 'public, no-cache, stale-while-revalidate=3600'
+          },
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
           }
         ],
       },

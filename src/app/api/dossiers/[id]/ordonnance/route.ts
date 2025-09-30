@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { NotificationsByRole } from '@/lib/notifications-by-role'
+import { CacheRevalidation } from '@/lib/revalidation-utils'
+import { verify } from 'jsonwebtoken'
 
 /**
  * 📋 API ORDONNANCEMENT DOSSIER - ACGE
- * 
+ *
  * Ordonnance un dossier par l'Ordonnateur
  */
+
+// Forcer le mode dynamique
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,20 +20,57 @@ export async function PUT(
   try {
     const resolvedParams = await params
     const id = resolvedParams.id
-    
+
     console.log('📋 Ordonnancement dossier:', id)
-    
-    const body = await request.json()
-    const { commentaire, montant } = body
-    
+
     const admin = getSupabaseAdmin()
-    
+
     if (!admin) {
       return NextResponse.json(
         { error: 'Service de base de données indisponible' },
         { status: 503 }
       )
     }
+
+    // 🔐 Récupérer l'utilisateur depuis le JWT
+    const authToken = request.cookies.get('auth-token')?.value
+
+    if (!authToken) {
+      console.error('❌ Cookie auth-token manquant')
+      return NextResponse.json(
+        { error: 'Non authentifié - Token manquant' },
+        { status: 401 }
+      )
+    }
+
+    let userId: string
+    let userRole: string
+
+    try {
+      const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
+      userId = decoded.userId
+      userRole = decoded.role
+
+      console.log('🔐 JWT décodé:', { userId, role: userRole })
+
+      // Vérifier que l'utilisateur est un ordonnateur
+      if (userRole !== 'ORDONNATEUR' && userRole !== 'ADMIN') {
+        console.error('❌ Rôle non autorisé:', userRole)
+        return NextResponse.json(
+          { error: 'Seuls les ordonnateurs peuvent ordonnancer des dossiers' },
+          { status: 403 }
+        )
+      }
+    } catch (jwtError) {
+      console.error('❌ JWT invalide:', jwtError)
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { commentaire, montant } = body
     
     // Récupérer le dossier avec toutes les informations
     const { data: dossier, error: fetchError } = await admin
@@ -143,7 +186,15 @@ export async function PUT(
     }
 
     console.log('📋 Dossier ordonnançé avec succès:', updatedDossier.numeroDossier)
-    
+
+    // 🔄 REVALIDATION DU CACHE
+    try {
+      await CacheRevalidation.revalidateValidationOrdonnateur(id)
+      console.log('🔄 Cache invalidé après ordonnancement')
+    } catch (revalidateError) {
+      console.warn('⚠️ Erreur revalidation cache:', revalidateError)
+    }
+
     // 🔔 NOTIFICATIONS INTELLIGENTES PAR RÔLE
     try {
       // Notifier la secrétaire
@@ -196,11 +247,18 @@ export async function PUT(
       // Ne pas faire échouer l'ordonnancement pour une erreur de notification
     }
     
-    return NextResponse.json({ 
-      success: true,
-      dossier: updatedDossier,
-      message: 'Dossier ordonnançé avec succès'
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        dossier: updatedDossier,
+        message: 'Dossier ordonnançé avec succès'
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('❌ Erreur lors de l\'ordonnancement du dossier:', error)

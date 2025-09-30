@@ -47,9 +47,15 @@
       "Bash(wmic process where ProcessId=43600 delete:*)",
       "Bash(echo $SUPABASE_JWT_SECRET)",
       "Bash(wmic process where ProcessId=35024 delete:*)",
-      "Bash(wmic process where ProcessId=26260 delete:*)"
+      "Bash(wmic process where ProcessId=26260 delete:*)",
+      "Bash(git push:*)",
+      "Bash(claude doctor)",
+      "Bash(timeout 30 bash -c 'while ! curl -s http://localhost:3001 > /dev/null; do sleep 1; done; echo \"\"Server ready\"\"')",
+      "Bash(start http://localhost:3001/ac-dashboard)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "outputStyle": "default"
 }

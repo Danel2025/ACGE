@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 interface PageHeaderProps {
   title: string
-  subtitle?: string
+  subtitle?: ReactNode
   actions?: ReactNode
   className?: string
 }
@@ -23,9 +23,9 @@ export function PageHeader({
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             {subtitle}
-          </p>
+          </div>
         )}
       </div>
       {actions && (

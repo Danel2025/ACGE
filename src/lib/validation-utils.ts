@@ -23,9 +23,11 @@ export async function checkDossierValidationStatus(dossierId: string): Promise<V
     console.log('🔍 Vérification des validations pour dossier:', dossierId)
 
     // Utiliser la nouvelle API combinée pour plus de fiabilité
-    const response = await fetch(`/api/dossiers/${dossierId}/validation-status`, {
+    // Ajouter un timestamp pour éviter le cache
+    const response = await fetch(`/api/dossiers/${dossierId}/validation-status?_t=${Date.now()}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
     })
 
     if (response.ok) {

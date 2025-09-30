@@ -16,7 +16,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LoadingState } from '@/components/ui/loading-states'
-import { FileText,
+import {
+  FileText,
   Download,
   Eye,
   Loader2,
@@ -33,7 +34,7 @@ import { FileText,
   Clock,
   Search,
   ArrowLeft
- } from 'lucide-react'
+} from 'lucide-react'
 import { DocumentEditModal } from '@/components/documents/document-edit-modal'
 import { DocumentShareModal } from '@/components/documents/document-share-modal'
 import { DocumentPreviewModal } from './document-preview-modal'

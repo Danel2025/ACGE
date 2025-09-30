@@ -237,8 +237,7 @@ export function VerificationsOrdonnateurForm({
         credentials: 'include',
         body: JSON.stringify({
           validations: validationsArray,
-          commentaire_general: commentaireGeneral.trim() || null,
-          userId: user.id
+          commentaire_general: commentaireGeneral.trim() || null
         })
       })
 

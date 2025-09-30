@@ -98,8 +98,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
               name: parsed.user.name,
               role: parsed.user.role
             })
-            // Attendre un court délai pour stabiliser l'état avant de terminer le chargement
-            await new Promise(resolve => setTimeout(resolve, 100))
             setIsLoading(false)
             return
           } else if (parsed.timestamp) {
@@ -143,11 +141,12 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
               name: data.user.name,
               role: data.user.role
             })
-            // Attendre un court délai pour stabiliser l'état avant de terminer le chargement
-            await new Promise(resolve => setTimeout(resolve, 100))
             setIsLoading(false)
             return
           }
+        } else if (response.status === 401) {
+          // 401 est normal quand l'utilisateur n'est pas connecté, ne pas logger d'erreur
+          console.log('ℹ️ Aucune session active (401 - comportement normal)')
         }
       } else {
         console.log('🛡️ Vérification API bloquée - consentement cookies requis')
@@ -166,8 +165,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.error('Erreur vérification auth:', error)
       setUserWithLogging(null)
     } finally {
-      // Attendre un court délai pour stabiliser l'état avant de terminer le chargement
-      await new Promise(resolve => setTimeout(resolve, 100))
       setIsLoading(false)
     }
   }
@@ -268,7 +265,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
           }))
           console.log('💾 localStorage mis à jour avec:', data.user.email, data.user.role)
 
-          // Mettre à jour l'état utilisateur et stabiliser le chargement
+          // Mettre à jour l'état utilisateur
           setUserWithLogging({
             id: data.user.id,
             email: data.user.email,
@@ -276,8 +273,6 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
             role: data.user.role
           })
 
-          // Attendre un court délai pour stabiliser l'état avant de terminer
-          await new Promise(resolve => setTimeout(resolve, 150))
           setIsLoading(false)
 
           return true
@@ -308,16 +303,13 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         credentials: 'include'
       })
 
-      // 4. Attendre un court délai pour stabiliser l'état
-      await new Promise(resolve => setTimeout(resolve, 150))
-
-      // 5. Nettoyer l'état utilisateur
+      // 4. Nettoyer l'état utilisateur
       setUserWithLogging(null)
 
-      // 6. S'assurer que isLoading est remis à false après la déconnexion
+      // 5. S'assurer que isLoading est remis à false après la déconnexion
       setIsLoading(false)
 
-      // 7. Redirection fluide avec replace pour éviter l'historique
+      // 6. Redirection fluide avec replace pour éviter l'historique
       router.replace('/login')
 
       console.log('✅ Déconnexion terminée')

@@ -42,32 +42,23 @@ export default function DashboardPage() {
   // Redirection automatique basée sur le rôle
   useEffect(() => {
     console.log('🔍 Dashboard useEffect - authLoading:', authLoading, 'user:', user)
-    
+
     if (!authLoading && user && user.role) {
       console.log(`👤 Utilisateur connecté: ${user.name} (${user.role})`)
-      
+
       // Seuls les admins restent sur cette page
       if (user.role !== 'ADMIN') {
         console.log(`🔀 Redirection ${user.role} vers page spécialisée`)
-        
-        // Attendre un court délai pour éviter les conflits de redirection
-        const timer = setTimeout(() => {
-          const redirectPath = getRoleRedirectPath(user.role)
-          console.log(`🎯 Redirection vers: ${redirectPath}`)
-          router.replace(redirectPath)
-        }, 100)
-        
-        return () => clearTimeout(timer)
+
+        const redirectPath = getRoleRedirectPath(user.role)
+        console.log(`🎯 Redirection vers: ${redirectPath}`)
+        router.replace(redirectPath)
       } else {
         console.log(`✅ Admin reste sur dashboard`)
       }
     } else if (!authLoading && !user) {
       console.log('❌ Utilisateur non connecté, redirection vers login')
-      const timer = setTimeout(() => {
-        router.replace('/login')
-      }, 100)
-      
-      return () => clearTimeout(timer)
+      router.replace('/login')
     } else {
       console.log('⏳ En attente du chargement ou utilisateur non connecté')
     }

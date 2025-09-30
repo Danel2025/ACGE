@@ -440,4 +440,51 @@ export class NotificationsByRole {
       return []
     }
   }
+
+  // Notification pour validation définitive (Agent Comptable)
+  async notifyValidationDefinitive(data: {
+    dossierId: string
+    numeroDossier: string
+    objetOperation: string
+    beneficiaire: string
+    posteComptable: string
+    montant: number
+    commentaire?: string | null
+    validatedAt: string
+  }) {
+    try {
+      // Récupérer le dossier pour obtenir le secrétaire
+      const { data: dossier } = await supabase
+        .from('dossiers')
+        .select('secretaireId')
+        .eq('id', data.dossierId)
+        .single()
+
+      if (!dossier?.secretaireId) {
+        console.warn('⚠️ Impossible de notifier : secrétaire non trouvé')
+        return []
+      }
+
+      // Notifier le secrétaire
+      const notification: RoleNotificationData = {
+        userId: dossier.secretaireId,
+        title: 'Dossier validé définitivement',
+        message: `Votre dossier ${data.numeroDossier} a été validé définitivement par l'Agent Comptable.\n\nObjet: ${data.objetOperation}\nBénéficiaire: ${data.beneficiaire}\nMontant: ${data.montant.toLocaleString('fr-FR')} FCFA${data.commentaire ? `\n\nCommentaire: ${data.commentaire}` : ''}`,
+        type: 'SUCCESS',
+        priority: 'HIGH',
+        actionUrl: `/folders`,
+        actionLabel: 'Voir mes dossiers',
+        metadata: {
+          dossierId: data.dossierId,
+          numeroDossier: data.numeroDossier,
+          validatedAt: data.validatedAt
+        }
+      }
+
+      return NotificationsByRole.createNotifications([notification])
+    } catch (error) {
+      console.error('Erreur notification validation définitive:', error)
+      return []
+    }
+  }
 }

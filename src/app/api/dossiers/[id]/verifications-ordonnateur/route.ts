@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { verify } from 'jsonwebtoken'
 
 /**
  * 📋 API VALIDATION VÉRIFICATIONS ORDONNATEUR - ACGE
- * 
+ *
  * Enregistre les vérifications effectuées par l'ordonnateur pour un dossier
  */
 export async function POST(
@@ -13,32 +14,62 @@ export async function POST(
   try {
     const resolvedParams = await params
     const dossierId = resolvedParams.id
-    
+
     console.log('📋 Validation vérifications ordonnateur pour dossier:', dossierId)
-    
+
     const admin = getSupabaseAdmin()
-    
+
     if (!admin) {
       return NextResponse.json(
         { error: 'Service de base de données indisponible' },
         { status: 503 }
       )
     }
-    
+
+    // 🔐 Récupérer l'utilisateur depuis le JWT
+    const authToken = request.cookies.get('auth-token')?.value
+
+    if (!authToken) {
+      console.error('❌ Cookie auth-token manquant')
+      return NextResponse.json(
+        { error: 'Non authentifié - Token manquant' },
+        { status: 401 }
+      )
+    }
+
+    let userId: string
+    let userRole: string
+
+    try {
+      const decoded = verify(authToken, process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || 'unified-jwt-secret-for-development') as any
+      userId = decoded.userId
+      userRole = decoded.role
+
+      console.log('🔐 JWT décodé:', { userId, role: userRole })
+
+      // Vérifier que l'utilisateur est un ordonnateur
+      if (userRole !== 'ORDONNATEUR' && userRole !== 'ADMIN') {
+        console.error('❌ Rôle non autorisé:', userRole)
+        return NextResponse.json(
+          { error: 'Seuls les ordonnateurs peuvent effectuer des vérifications' },
+          { status: 403 }
+        )
+      }
+    } catch (jwtError) {
+      console.error('❌ JWT invalide:', jwtError)
+      return NextResponse.json(
+        { error: 'Token invalide' },
+        { status: 401 }
+      )
+    }
+
     // Récupérer les données de validation
     const body = await request.json()
-    const { validations, commentaire_general, userId } = body
-    
+    const { validations, commentaire_general } = body
+
     if (!validations || !Array.isArray(validations)) {
       return NextResponse.json(
         { error: 'Données de validation invalides' },
-        { status: 400 }
-      )
-    }
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'ID utilisateur requis' },
         { status: 400 }
       )
     }

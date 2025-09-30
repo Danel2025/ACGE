@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
+import { CacheRevalidation } from '@/lib/revalidation-utils'
 
 /**
  * 📄 API GÉNÉRATION QUITUS - ACGE
- * 
+ *
  * Génère automatiquement un quitus pour un dossier validé définitivement
  */
+
+// Forcer le mode dynamique
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 // GET pour les tests - retourne les informations du quitus existant
 export async function GET(
@@ -77,23 +82,7 @@ export async function POST(
     const { data: dossier, error: dossierError } = await admin
       .from('dossiers')
       .select(`
-        id,
-        numeroDossier,
-        numeroNature,
-        objetOperation,
-        beneficiaire,
-        statut,
-        createdAt,
-        updatedAt,
-        posteComptableId,
-        natureDocumentId,
-        secretaireId,
-        folderId,
-        montant,
-        montantOrdonnance,
-        validatedAt,
-        commentaires,
-        dateOrdonnancement,
+        *,
         poste_comptable:posteComptableId(*),
         nature_document:natureDocumentId(*),
         secretaire:secretaireId(id, name, email)
@@ -108,6 +97,9 @@ export async function POST(
         { status: 404 }
       )
     }
+
+    // 🔍 Debug: Afficher les noms de colonnes disponibles
+    console.log('🔍 Colonnes du dossier récupérées:', Object.keys(dossier))
 
     // Vérifier que le dossier est validé définitivement
     if (dossier.statut !== 'VALIDÉ_DÉFINITIVEMENT') {
@@ -168,21 +160,21 @@ export async function POST(
       // Historique des validations
       historique: {
         creation: {
-          date: dossier.createdAt,
+          date: dossier.createdAt || dossier.created_at,
           par: dossier.secretaire?.name || 'Secrétaire'
         },
         validationCB: {
-          date: dossier.validatedAt || null,
+          date: dossier.validatedCBAt || dossier.validated_cb_at || dossier.validatedat || null,
           statut: 'VALIDÉ_CB'
         },
         ordonnancement: {
-          date: dossier.ordonnancedAt || null,
-          commentaire: dossier.ordonnancementComment || null,
-          montant: dossier.montantOrdonnance || 0
+          date: dossier.ordonnancedAt || dossier.ordonnanced_at || null,
+          commentaire: dossier.ordonnancementComment || dossier.ordonnancement_comment || null,
+          montant: dossier.montantOrdonnance || dossier.montant_ordonnance || 0
         },
         validationDefinitive: {
-          date: dossier.validatedDefinitivelyAt,
-          commentaire: dossier.validationDefinitiveComment || null
+          date: dossier.validatedDefinitivelyAt || dossier.validated_definitively_at || null,
+          commentaire: dossier.validationDefinitiveComment || dossier.validation_definitive_comment || null
         }
       },
       
@@ -249,11 +241,26 @@ export async function POST(
 
     console.log('✅ Quitus généré avec succès:', quitusData.numeroQuitus)
 
-    return NextResponse.json({
-      success: true,
-      message: `Quitus ${quitusData.numeroQuitus} généré avec succès`,
-      quitus: quitusData
-    })
+    // 🔄 REVALIDATION DU CACHE
+    try {
+      await CacheRevalidation.revalidateQuitus(dossierId)
+      console.log('🔄 Cache invalidé après génération quitus')
+    } catch (revalidateError) {
+      console.warn('⚠️ Erreur revalidation cache:', revalidateError)
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Quitus ${quitusData.numeroQuitus} généré avec succès`,
+        quitus: quitusData
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate'
+        }
+      }
+    )
 
   } catch (error) {
     console.error('❌ Erreur génération quitus:', error)
