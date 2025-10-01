@@ -330,19 +330,21 @@ function ACDashboardContent() {
   const handleGenerateQuitus = async (dossier: DossierComptable) => {
     try {
       setActionLoading(true)
-      
+
       const response = await fetch(`/api/dossiers/${dossier.id}/generate-quitus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         console.log('✅ Quitus généré:', data.message)
         setQuitusData(data.quitus)
         setSelectedDossier(dossier)
         setQuitusOpen(true)
+        // Recharger les dossiers pour mettre à jour le statut à TERMINÉ
+        await loadDossiers()
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Erreur lors de la génération du quitus')
