@@ -92,8 +92,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
     console.log('📡 Realtime: Abonnement aux changements de dossiers')
 
+    // Créer un nom de canal unique pour éviter les conflits
+    const channelName = `dossiers-changes-${user.id}-${Date.now()}`
     const channel = supabase
-      .channel('dossiers-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -105,15 +107,15 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           console.log('📦 Realtime: Changement de dossier détecté', payload)
           callback(payload)
 
-          // Notification toast selon le type d'événement
+          // Notification toast selon le type d'événement (limiter les toasts)
           if (payload.eventType === 'INSERT') {
             toast.info('Nouveau dossier créé', {
-              description: `Dossier ${payload.new?.numeroDossier || 'N/A'} créé`
+              description: `Dossier ${payload.new?.numeroDossier || 'N/A'} créé`,
+              duration: 3000
             })
           } else if (payload.eventType === 'UPDATE') {
-            toast.info('Dossier mis à jour', {
-              description: `Dossier ${payload.new?.numeroDossier || 'N/A'} modifié`
-            })
+            // Ne pas afficher de toast pour les updates pour éviter le spam
+            console.log('📝 Dossier mis à jour:', payload.new?.numeroDossier)
           }
         }
       )
@@ -121,14 +123,14 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         console.log('📡 Status abonnement dossiers:', status)
       })
 
-    setChannels(prev => new Map(prev).set('dossiers-changes', channel))
+    setChannels(prev => new Map(prev).set(channelName, channel))
 
     return () => {
       console.log('🔌 Realtime: Désabonnement des changements de dossiers')
       channel.unsubscribe()
       setChannels(prev => {
         const newMap = new Map(prev)
-        newMap.delete('dossiers-changes')
+        newMap.delete(channelName)
         return newMap
       })
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useModal } from '@/contexts/modal-context'
 
 /**
@@ -9,6 +9,7 @@ import { useModal } from '@/contexts/modal-context'
  */
 export function useModalDetection() {
   const { setModalOpen } = useModal()
+  const lastModalStateRef = useRef(false)
 
   useEffect(() => {
     // Fonction pour vérifier l'état des modals
@@ -17,7 +18,7 @@ export function useModalDetection() {
       const dialogElements = document.querySelectorAll('[role="dialog"]')
       const sheetElements = document.querySelectorAll('[data-sheet]')
       const modalElements = document.querySelectorAll('[data-modal]')
-      
+
       const allModalElements = [
         ...dialogElements,
         ...sheetElements,
@@ -29,7 +30,7 @@ export function useModalDetection() {
         const state = element.getAttribute('data-state')
         const ariaHidden = element.getAttribute('aria-hidden')
         const style = window.getComputedStyle(element)
-        
+
         return (
           state === 'open' ||
           ariaHidden === 'false' ||
@@ -37,7 +38,11 @@ export function useModalDetection() {
         )
       })
 
-      setModalOpen(isAnyModalOpen)
+      // Ne mettre à jour que si l'état a changé
+      if (lastModalStateRef.current !== isAnyModalOpen) {
+        lastModalStateRef.current = isAnyModalOpen
+        setModalOpen(isAnyModalOpen)
+      }
     }
 
     // Observer les changements dans le DOM
@@ -65,8 +70,8 @@ export function useModalDetection() {
     // Vérification initiale
     checkModalState()
 
-    // Vérifier périodiquement (fallback)
-    const interval = setInterval(checkModalState, 1000)
+    // Vérifier périodiquement (fallback) - intervalle augmenté à 2 secondes
+    const interval = setInterval(checkModalState, 2000)
 
     return () => {
       observer.disconnect()

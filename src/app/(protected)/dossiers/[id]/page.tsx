@@ -1,20 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { CompactPageLayout, PageHeader, EmptyState, ContentSection } from '@/components/shared/compact-page-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +27,7 @@ import {
   Target,
   RefreshCw,
 } from 'lucide-react'
-import { UploadWithTrigger } from '@/components/upload/upload-with-trigger'
+import { UploadWithTrigger, UploadWithTriggerRef } from '@/components/upload/upload-with-trigger'
 
 
 const getStatutBadge = (statut: string) => {
@@ -72,9 +64,7 @@ export default function DossierDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [documentsLoading, setDocumentsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [addExistingModalOpen, setAddExistingModalOpen] = useState(false)
-  const [availableDocuments, setAvailableDocuments] = useState<any[]>([])
+  const uploadTriggerRef = useRef<UploadWithTriggerRef>(null)
 
   // Charger les détails du dossier
   useEffect(() => {
@@ -140,43 +130,6 @@ export default function DossierDetailPage() {
     }
   }, [dossierId])
 
-  // Charger les documents disponibles pour ajout
-  const fetchAvailableDocuments = async () => {
-    try {
-      const response = await fetch('/api/documents?unassigned=true')
-      if (response.ok) {
-        const data = await response.json()
-        setAvailableDocuments(data.documents || [])
-      }
-    } catch (err) {
-      console.error('Erreur chargement documents disponibles:', err)
-    }
-  }
-
-  // Ajouter un document existant au dossier
-  const handleAddExistingDocument = async (documentId: string) => {
-    try {
-      const response = await fetch(`/api/dossiers/${dossierId}/documents`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ documentId }),
-      })
-
-      if (response.ok) {
-        await fetchDocuments()
-        setAddExistingModalOpen(false)
-        await fetchAvailableDocuments() // Recharger la liste des documents disponibles
-      } else {
-        const error = await response.json()
-        alert('Erreur: ' + (error.error || 'Erreur inconnue'))
-      }
-    } catch (err) {
-      console.error('Erreur ajout document:', err)
-      alert('Erreur lors de l\'ajout du document')
-    }
-  }
 
   // Retirer un document du dossier
   const handleRemoveDocument = async (documentId: string) => {
@@ -191,7 +144,6 @@ export default function DossierDetailPage() {
 
       if (response.ok) {
         await fetchDocuments()
-        await fetchAvailableDocuments() // Recharger la liste des documents disponibles
       } else {
         const error = await response.json()
         alert('Erreur: ' + (error.error || 'Erreur inconnue'))
@@ -215,7 +167,11 @@ export default function DossierDetailPage() {
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
+
+        // Vérifier que l'élément est bien un enfant du body avant de le supprimer
+        if (a.parentNode === document.body) {
+          document.body.removeChild(a)
+        }
       } else {
         alert('Erreur lors du téléchargement')
       }
@@ -316,53 +272,9 @@ export default function DossierDetailPage() {
                 <RefreshCw className={`h-4 w-4 mr-2 ${documentsLoading ? 'animate-spin' : ''}`} />
                 Actualiser
               </Button>
-              <Dialog open={addExistingModalOpen} onOpenChange={setAddExistingModalOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={fetchAvailableDocuments}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Ajouter existant
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Ajouter un document existant</DialogTitle>
-                    <DialogDescription>
-                      Sélectionnez un document non assigné à ajouter à ce dossier
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="max-h-96 overflow-y-auto">
-                    {availableDocuments.length > 0 ? (
-                      <div className="space-y-2">
-                        {availableDocuments.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                          >
-                            <div>
-                              <div className="font-medium">{doc.title}</div>
-                              <div className="text-sm text-gray-600">
-                                {doc.file_name} • {formatFileSize(doc.file_size)}
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddExistingDocument(doc.id)}
-                            >
-                              Ajouter
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        Aucun document disponible
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
 
               <UploadWithTrigger
+                ref={uploadTriggerRef}
                 onSuccess={fetchDocuments}
                 folderId={dossierId}
                 trigger={
@@ -443,7 +355,12 @@ export default function DossierDetailPage() {
               description="Ce dossier ne contient aucun document pour le moment"
               action={{
                 label: "Ajouter un document",
-                onClick: () => setUploadModalOpen(true)
+                onClick: () => {
+                  // Déclencher l'ouverture de la modal via le ref
+                  if (uploadTriggerRef.current) {
+                    uploadTriggerRef.current.openModal();
+                  }
+                }
               }}
             />
           )}

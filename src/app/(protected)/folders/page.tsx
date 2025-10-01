@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useFolders, type DossierData } from '@/hooks/use-folders'
 import { LoadingState } from '@/components/ui/loading-states'
-import { FileText, Plus, MoreHorizontal, Edit, Trash2, Eye, Send, Clock, FolderOpen, Calculator, FileCheck, CheckCircle, Loader2 } from 'lucide-react'
+import { FileText, Plus, MoreHorizontal, Edit, Trash2, Eye, Send, Clock, FolderOpen, Calculator, FileCheck, CheckCircle } from 'lucide-react'
 import { DossierEditModal } from '@/components/ui/dossier-edit-modal'
 
 const getStatutBadge = (statut: string) => {
@@ -472,19 +472,19 @@ export default function DossiersPage() {
               {/* Progress Steps */}
               <div className="px-6 py-8 border-b bg-gradient-to-r from-muted/30 to-muted/10">
                 <div className="relative flex items-center justify-center">
-                  {/* Ligne de connexion horizontale de fond */}
+                  {/* Ligne de connexion horizontale de fond - adaptée à la grille */}
                   <div className="absolute top-6 left-0 right-0 h-0.5 bg-muted-foreground/20 rounded-full">
-                    {/* Ligne de progression animée */}
-                    <div 
-                      className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
-                      style={{ 
-                        width: currentStep > 1 ? `${((currentStep - 1) / 3) * 100}%` : '0%' 
+                    {/* Ligne de progression - ajustée pour la grille à 4 colonnes */}
+                    <div
+                      className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full"
+                      style={{
+                        width: currentStep > 1 ? `${((currentStep - 1) / 3) * 100}%` : '0%'
                       }}
                     />
                   </div>
                   
-                  {/* Conteneur des étapes avec espacement égal */}
-                  <div className="relative flex items-center justify-between w-full max-w-4xl">
+                  {/* Conteneur des étapes avec grille pour alignement parfait */}
+                  <div className="relative grid grid-cols-4 gap-4 w-full max-w-4xl">
                     {[
                       { step: 1, icon: FolderOpen, label: 'Informations de base', sublabel: 'Nom et description du dossier' },
                       { step: 2, icon: Calculator, label: 'Informations comptables', sublabel: 'Poste comptable et nature du document' },
@@ -492,30 +492,26 @@ export default function DossiersPage() {
                       { step: 4, icon: CheckCircle, label: 'Validation', sublabel: 'Vérification des informations' }
                     ].map(({ step, icon: Icon, label, sublabel }, index) => (
                       <div key={step} className="flex flex-col items-center space-y-4 relative z-10 group">
-                        {/* Icône d'état avec animation */}
-                        <div className={`relative flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-300 group-hover:scale-105 ${
+                        {/* Icône d'état */}
+                        <div className={`relative flex items-center justify-center w-14 h-14 rounded-full border-2 ${
                           currentStep === step
-                            ? 'bg-primary border-primary text-primary-foreground shadow-lg scale-110 ring-4 ring-primary/20'
+                            ? 'bg-green-500 border-green-500 text-white shadow-lg ring-4 ring-green-500/20'
                             : currentStep > step
-                            ? 'bg-green-600 border-green-600 text-white shadow-md hover:shadow-lg'
-                            : 'bg-background border-muted-foreground/20 text-muted-foreground hover:border-muted-foreground/40 hover:bg-muted/50'
+                            ? 'bg-green-600 border-green-600 text-white shadow-md'
+                            : 'bg-background border-muted-foreground/20 text-muted-foreground'
                         }`}>
                           <Icon className="w-7 h-7" />
                           {currentStep > step && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-green-600 rounded-full animate-pulse">
+                            <div className="absolute inset-0 flex items-center justify-center bg-green-600 rounded-full">
                               <CheckCircle className="w-6 h-6 text-white" />
                             </div>
                           )}
-                          {/* Indicateur de progression */}
-                          {currentStep === step && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-ping" />
-                          )}
                         </div>
-                        
-                        {/* Labels avec animation */}
-                        <div className="text-center max-w-[160px]">
-                          <div className={`text-sm font-semibold transition-all duration-200 ${
-                            currentStep >= step ? 'text-primary' : 'text-muted-foreground'
+
+                        {/* Labels */}
+                        <div className="text-center max-w-full">
+                          <div className={`text-sm font-semibold ${
+                            currentStep >= step ? 'text-green-600' : 'text-muted-foreground'
                           }`}>
                             {label}
                           </div>
@@ -523,9 +519,9 @@ export default function DossiersPage() {
                             {sublabel}
                           </div>
                           {/* Indicateur de numéro d'étape */}
-                          <div className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-full transition-all duration-200 ${
-                            currentStep >= step 
-                              ? 'bg-primary text-primary-foreground' 
+                          <div className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-full ${
+                            currentStep >= step
+                              ? 'bg-green-600 text-white'
                               : 'bg-muted text-muted-foreground'
                           }`}>
                             Étape {step}
@@ -543,8 +539,8 @@ export default function DossiersPage() {
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                        <FolderOpen className="w-8 h-8 text-primary" />
+                      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen className="w-8 h-8 text-green-600" />
                       </div>
                       <p className="text-sm text-muted-foreground">Définissez le nom et la description de votre dossier</p>
                     </div>
@@ -580,8 +576,8 @@ export default function DossiersPage() {
                 {currentStep === 2 && (
                   <div className="space-y-6">
                     <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                        <Calculator className="w-8 h-8 text-primary" />
+                      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <Calculator className="w-8 h-8 text-green-600" />
                       </div>
                       <p className="text-sm text-muted-foreground">Renseignez les détails comptables du dossier</p>
                     </div>
@@ -632,8 +628,8 @@ export default function DossiersPage() {
                 {currentStep === 3 && (
                   <div className="space-y-6">
                     <div className="text-center">
-                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                        <FileCheck className="w-8 h-8 text-primary" />
+                      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <FileCheck className="w-8 h-8 text-green-600" />
                       </div>
                       <p className="text-sm text-muted-foreground">Complétez les informations spécifiques à l'opération</p>
                     </div>

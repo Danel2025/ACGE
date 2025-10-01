@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,20 +8,24 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingState } from '@/components/ui/loading-states'
-import { CheckCircle2, 
-  XCircle, 
-  AlertTriangle, 
-  FileText, 
+import { CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  FileText,
   Gavel,
   Calculator,
   ClipboardCheck,
-  Loader2,
   Save,
   Eye,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Download,
+  ChevronRight,
+  ChevronLeft
  } from 'lucide-react'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
+import { DocumentPreviewModal } from '@/components/ui/document-preview-modal'
+import { toast } from 'sonner'
 
 // Types
 interface VerificationOrdonnateur {
@@ -57,6 +61,9 @@ interface VerificationsOrdonnateurFormProps {
   onValidationComplete: (success: boolean) => void
   onCancel: () => void
   mode?: 'validation' | 'consultation'
+  folderId?: string
+  onSubmitRef?: React.MutableRefObject<(() => Promise<void>) | null>
+  submittingRef?: React.MutableRefObject<boolean>
 }
 
 // Configuration des icônes par nom
@@ -77,12 +84,112 @@ const colorMap: Record<string, string> = {
   'red': 'border-l-red-500'
 }
 
+// Hook pour charger les documents d'un dossier
+const useFolderDocuments = (folderId?: string, dossierId?: string) => {
+  const [documents, setDocuments] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadDocuments = useCallback(async () => {
+    const queryParam = folderId ? `folderId=${folderId}` : dossierId ? `dossierId=${dossierId}` : null
+
+    if (!queryParam) {
+      console.warn('⚠️ Aucun folderId ou dossierId fourni pour charger les documents')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+      console.log(`📄 Chargement des documents avec: ${queryParam}`)
+      const response = await fetch(`/api/documents?${queryParam}`)
+      if (!response.ok) throw new Error('Erreur lors du chargement des documents')
+      const data = await response.json()
+      console.log(`✅ ${data.documents?.length || 0} documents chargés`)
+      setDocuments(data.documents || [])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erreur inconnue'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [folderId, dossierId])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
+
+  return { documents, loading, error, loadDocuments }
+}
+
+// Composant pour afficher les documents du dossier
+const DocumentsList = ({
+  documents,
+  loading,
+  onViewDocument
+}: {
+  documents: any[]
+  loading: boolean
+  onViewDocument: (doc: any) => void
+}) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <LoadingState isLoading={true} message="Chargement des documents..." />
+      </div>
+    )
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+        <FileText className="h-10 w-10 mb-2 opacity-50" />
+        <p className="text-sm">Aucun document dans ce dossier</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {documents.map((doc) => (
+        <div
+          key={doc.id}
+          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+          onClick={() => onViewDocument(doc)}
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <FileText className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{doc.fileName || doc.title}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-gray-500">
+                  {doc.fileSize ? `${(doc.fileSize / 1024 / 1024).toFixed(1)} Mo` : 'N/A'}
+                </span>
+                {doc.category && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                    {doc.category}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <Eye className="h-4 w-4 text-gray-400 flex-shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function VerificationsOrdonnateurForm({
   dossierId,
   dossierNumero,
   onValidationComplete,
   onCancel,
-  mode = 'validation'
+  mode = 'validation',
+  folderId,
+  onSubmitRef,
+  submittingRef
 }: VerificationsOrdonnateurFormProps) {
   const { user } = useSupabaseAuth()
   const [categories, setCategories] = useState<CategorieVerification[]>([])
@@ -93,6 +200,10 @@ export function VerificationsOrdonnateurForm({
   const [error, setError] = useState<string | null>(null)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const [validationsExistantes, setValidationsExistantes] = useState<any[]>([])
+  const { documents, loading: documentsLoading } = useFolderDocuments(folderId, dossierId)
+  const [showDocuments, setShowDocuments] = useState(true)
+  const [selectedDocument, setSelectedDocument] = useState<any>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   // Charger les vérifications ordonnateur
   useEffect(() => {
@@ -271,6 +382,25 @@ export function VerificationsOrdonnateurForm({
     return colorMap[colorName] || colorMap['blue']
   }
 
+  const handleViewDocument = useCallback((doc: any) => {
+    setSelectedDocument(doc)
+    setPreviewOpen(true)
+  }, [])
+
+  // Exposer la fonction de soumission au parent via ref
+  React.useEffect(() => {
+    if (onSubmitRef) {
+      onSubmitRef.current = handleSubmit
+    }
+  }, [onSubmitRef, handleSubmit])
+
+  // Exposer l'état de soumission au parent via ref
+  React.useEffect(() => {
+    if (submittingRef) {
+      submittingRef.current = submitting
+    }
+  }, [submittingRef, submitting])
+
 
   if (loading) {
     return (
@@ -290,9 +420,13 @@ export function VerificationsOrdonnateurForm({
   }
 
   return (
-    <div className="space-y-3">
-      {/* Catégories de vérifications */}
-      <div className="space-y-2">
+    <>
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="grid gap-4 md:grid-cols-2 h-[calc(100vh-12rem)]">
+          {/* Colonne gauche: Vérifications */}
+          <div className="space-y-3 overflow-y-auto pr-2">
+            {/* Catégories de vérifications */}
+            <div className="space-y-2">
         {categories.map((categorie) => {
           const IconComponent = getIconComponent(categorie.icone)
           const isExpanded = expandedCategories[categorie.id]
@@ -480,41 +614,52 @@ export function VerificationsOrdonnateurForm({
           )}
         </CardContent>
       </Card>
+          </div>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button variant="outline" onClick={onCancel}>
-          {mode === 'consultation' ? 'Fermer' : 'Annuler'}
-        </Button>
-        
-        {mode === 'validation' && (
-          <Button
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <div className="h-4 w-4 mr-2">
-                  <LoadingState isLoading={true} size="sm" showText={false} />
-                </div>
-                Enregistrement...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Enregistrer les vérifications
-              </>
-            )}
-          </Button>
-        )}
-        
-        {mode === 'consultation' && (
-          <Button variant="outline">
-            <Eye className="h-4 w-4 mr-2" />
-            Voir les documents
-          </Button>
-        )}
+          {/* Colonne droite: Documents */}
+          <div className="overflow-y-auto pr-2">
+            <Card className="w-full h-full">
+              <CardHeader className="pb-4 sticky top-0 bg-white z-10">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <FileText className="h-4 w-4" />
+                  <span>Documents du dossier</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {documentsLoading ? 'Chargement...' : `${documents.length} document${documents.length > 1 ? 's' : ''}`}
+                  {!folderId && (
+                    <span className="text-orange-500 ml-2">(via dossierId)</span>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!showDocuments ? (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    Documents masqués
+                  </div>
+                ) : (
+                  <DocumentsList
+                    documents={documents}
+                    loading={documentsLoading}
+                    onViewDocument={handleViewDocument}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Modal de prévisualisation des documents */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          document={selectedDocument}
+          isOpen={previewOpen}
+          onClose={() => {
+            setPreviewOpen(false)
+            setSelectedDocument(null)
+          }}
+        />
+      )}
+    </>
   )
 }

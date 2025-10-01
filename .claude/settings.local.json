@@ -52,7 +52,12 @@
       "Bash(claude doctor)",
       "Bash(timeout 30 bash -c 'while ! curl -s http://localhost:3001 > /dev/null; do sleep 1; done; echo \"\"Server ready\"\"')",
       "Bash(start http://localhost:3001/ac-dashboard)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(timeout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: améliorations majeures du système de génération de quitus\n\n✨ Nouvelles fonctionnalités:\n• QR code de vérification avec hash SHA-256\n• Page de vérification publique de l''authenticité\n• Archivage automatique sécurisé dans Supabase Storage\n• Envoi automatique par email (Resend/SendGrid)\n• Rapport comparatif CB/Ordonnateur pour l''AC\n• Notifications automatiques aux parties prenantes\n• Mise à jour automatique du statut à TERMINÉ\n\n🔐 Sécurité:\n• Hash de vérification cryptographique\n• Traçabilité complète des vérifications\n• Stockage privé avec URLs signées\n• Filigrane ORIGINAL/COPIE\n\n🎨 Améliorations visuelles:\n• Section sécurité dans le quitus\n• QR code scannable intégré\n• Hash lisible et copiable\n\n📦 Infrastructure:\n• Service d''archivage (quitus-archive.ts)\n• Service email (email-service.ts)\n• Service sécurité (quitus-security.ts)\n• API de vérification (/api/verify-quitus)\n\n📋 Documentation:\n• QUITUS_IMPROVEMENTS.md avec guide complet\n• Instructions de configuration\n• Migrations SQL nécessaires\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(claude mcp:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

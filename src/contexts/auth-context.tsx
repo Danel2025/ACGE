@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { httpClient } from '@/lib/http-client'
 
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('🔑 Tentative de connexion pour:', email)
       const response = await fetch('/api/auth/login', {
@@ -125,30 +125,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Erreur lors de la connexion:', error)
       return false
     }
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       console.log('🚪 Tentative de déconnexion...')
-      
+
       // 1. Mettre l'état de chargement pour éviter les re-renders
       setIsLoading(true)
-      
-      const response = await fetch('/api/auth/logout', { 
+
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })
-      
+
       console.log('📡 Status logout:', response.status)
-      
+
       if (response.ok) {
         // 2. Attendre un court délai pour stabiliser l'état
         await new Promise(resolve => setTimeout(resolve, 150))
-        
+
         // 3. Nettoyer l'état utilisateur
         setUser(null)
         console.log('✅ Utilisateur déconnecté')
-        
+
         // 4. Redirection fluide avec replace
         router.replace('/login')
       } else {
@@ -164,9 +164,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false)
       router.replace('/login')
     }
-  }
+  }, [router])
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       console.log('🔄 Rafraîchissement des données utilisateur...')
       const response = await fetch('/api/auth/me', {
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache' }
       })
       console.log('📡 Status refreshUser:', response.status)
-      
+
       if (response.ok) {
         const data = await response.json()
         console.log('✅ Données utilisateur rafraîchies:', data)
@@ -190,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Erreur lors du rafraîchissement des données utilisateur:', error)
       setUser(null)
     }
-  }
+  }, [])
 
   // Mémoriser les valeurs pour éviter les re-renders inutiles
   const value = React.useMemo(() => ({
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     refreshUser
-  }), [user, isLoading])
+  }), [user, isLoading, login, logout, refreshUser])
 
   return (
     <AuthContext.Provider value={value}>

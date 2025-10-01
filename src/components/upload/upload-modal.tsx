@@ -32,7 +32,6 @@ import { Upload,
   X, 
   Check, 
   AlertTriangle,
-  Loader2,
   Plus,
   Tag
  } from 'lucide-react'

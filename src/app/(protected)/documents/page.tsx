@@ -472,6 +472,12 @@ export default function DocumentsPage() {
         a.download = documentItem.fileName || 'document'
         document.body.appendChild(a)
         a.click()
+
+        // Vérifier que l'élément est bien un enfant du body avant de le supprimer
+        if (a.parentNode === document.body) {
+          document.body.removeChild(a)
+        }
+
         window.URL.revokeObjectURL(url)
       } else {
         console.error('Erreur téléchargement:', response.status, response.statusText)

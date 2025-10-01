@@ -47,9 +47,13 @@ export function useBrowserAPIs() {
     const a = document.createElement('a')
     a.href = url
     a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+
+    // Déclencher sans manipulation DOM
+    a.dispatchEvent(new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    }))
   }, [isClient])
 
   // Fonction pour basculer le plein écran

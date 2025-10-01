@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRealtime } from '@/contexts/realtime-context'
 import { useSupabaseAuth } from '@/contexts/supabase-auth-context'
 
@@ -27,14 +27,20 @@ export function useRealtimeDossiers(options?: {
   const [updates, setUpdates] = useState<DossierUpdate[]>([])
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
+  // Utiliser useRef pour stocker les options et éviter les re-renders
+  const optionsRef = useRef(options)
+  useEffect(() => {
+    optionsRef.current = options
+  }, [options])
+
   const handleDossierChange = useCallback((payload: any) => {
     console.log('📦 Hook: Changement de dossier reçu', payload)
 
     const { eventType, new: newData, old: oldData } = payload
 
     // Filtrer par statut si spécifié
-    if (options?.filterByStatus && newData?.statut) {
-      if (!options.filterByStatus.includes(newData.statut)) {
+    if (optionsRef.current?.filterByStatus && newData?.statut) {
+      if (!optionsRef.current.filterByStatus.includes(newData.statut)) {
         console.log('🔍 Hook: Dossier filtré par statut', newData.statut)
         return
       }
@@ -60,14 +66,14 @@ export function useRealtimeDossiers(options?: {
     setLastUpdate(new Date())
 
     // Callbacks spécifiques
-    if (eventType === 'INSERT' && options?.onNewDossier) {
-      options.onNewDossier(newData)
-    } else if (eventType === 'UPDATE' && options?.onUpdateDossier) {
-      options.onUpdateDossier(newData)
-    } else if (eventType === 'DELETE' && options?.onDeleteDossier) {
-      options.onDeleteDossier(newData?.id || oldData?.id)
+    if (eventType === 'INSERT' && optionsRef.current?.onNewDossier) {
+      optionsRef.current.onNewDossier(newData)
+    } else if (eventType === 'UPDATE' && optionsRef.current?.onUpdateDossier) {
+      optionsRef.current.onUpdateDossier(newData)
+    } else if (eventType === 'DELETE' && optionsRef.current?.onDeleteDossier) {
+      optionsRef.current.onDeleteDossier(newData?.id || oldData?.id)
     }
-  }, [user?.role, options])
+  }, [user?.role])
 
   useEffect(() => {
     if (!user || !isConnected) {

@@ -816,17 +816,17 @@ function ACDashboardContent() {
 
         {/* Modal du quitus */}
         <Dialog open={quitusOpen} onOpenChange={setQuitusOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
+          <DialogContent className="max-w-4xl max-h-[90vh] print:!max-w-full print:!max-h-full print:!m-0 print:!p-0 overflow-hidden flex flex-col quitus-print" role="dialog">
+            <DialogHeader className="print:hidden">
               <DialogTitle>Quitus Généré</DialogTitle>
               <DialogDescription>
                 Quitus officiel pour le dossier {selectedDossier?.numeroDossier}
               </DialogDescription>
             </DialogHeader>
-            
-            <div className="flex-1 overflow-auto">
+
+            <div className="flex-1 overflow-auto print:!overflow-visible print:!block print:!h-auto">
               {quitusData && (
-                <QuitusDisplay 
+                <QuitusDisplay
                   quitus={quitusData}
                   dossierId={selectedDossier?.id}
                   onDownload={() => {

@@ -240,23 +240,49 @@ function CBRejectedContent() {
     setSelectedDocument(document)
     setShareModalOpen(true)
   }
-  const handleDownloadDocument = async (document: any) => {
+  const handleDownloadDocument = async (doc: any) => {
     try {
-      const response = await fetch(`/api/documents/${document.id}/download`)
+      const response = await fetch(`/api/documents/${doc.id}/download`)
       if (response.ok) {
         const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.href = url
-        a.download = document.fileName || 'document'
-        window.document.body.appendChild(a)
-        a.click()
-        window.document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
+        const fileName = doc.fileName || 'document'
+
+        // Méthode moderne sans createElement
+        if ('showSaveFilePicker' in window) {
+          // API File System Access (Chrome, Edge moderne)
+          try {
+            const handle = await (window as any).showSaveFilePicker({
+              suggestedName: fileName,
+            })
+            const writable = await handle.createWritable()
+            await writable.write(blob)
+            await writable.close()
+          } catch (err: any) {
+            if (err.name !== 'AbortError') {
+              throw err
+            }
+          }
+        } else {
+          // Fallback - Version drastique sans manipulation DOM
+          const url = URL.createObjectURL(blob)
+          const a = window.document.createElement('a')
+          a.href = url
+          a.download = fileName
+
+          // Déclencher le téléchargement sans ajouter au DOM
+          a.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          }))
+
+          // Nettoyer immédiatement
+          URL.revokeObjectURL(url)
+        }
       }
     } catch (error) {
       console.error('Erreur téléchargement:', error)
+      toast.error('Erreur lors du téléchargement')
     }
   }
   // Fonctions pour la suppression des dossiers rejetés

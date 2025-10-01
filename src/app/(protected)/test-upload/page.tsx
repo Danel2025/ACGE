@@ -12,7 +12,6 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Loader2,
   Database,
   ArrowLeft,
   Folder,
@@ -142,7 +141,7 @@ export default function TestUploadPage() {
                   className="ml-auto h-7"
                 >
                   {isTestingAPI ? (
-                    <LoadingState isLoading={true} size="sm" showText={false} />
+                    <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                   ) : (
                     "Retester"
                   )}

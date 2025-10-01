@@ -19,7 +19,6 @@ import {
   XCircle,
   ClipboardCheck,
   FileCheck,
-  Loader2,
   AlertTriangle,
   Info
 } from 'lucide-react'
@@ -340,7 +339,7 @@ const OrdonnancementModal = memo<OrdonnancementModalProps>(({
             {isLoading ? (
               <>
                 <div className="mr-2 h-4 w-4">
-                  <LoadingState isLoading={true} size="sm" showText={false} />
+                  <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                 </div>
                 Ordonnancement en cours...
               </>

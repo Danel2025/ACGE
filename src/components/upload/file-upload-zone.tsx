@@ -12,8 +12,7 @@ import {
   FileText,
   X,
   Check,
-  AlertTriangle,
-  Loader2
+  AlertTriangle
 } from 'lucide-react'
 import { LoadingState } from '@/components/ui/loading-states'
 interface FileWithPreview extends File {

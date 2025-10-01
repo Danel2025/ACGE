@@ -69,7 +69,6 @@ import {
   FileCheck,
   Info as AlertIcon,
   CheckCircle2,
-  Loader2,
   List,
   Grid3X3,
   ClipboardCheck,
@@ -137,6 +136,9 @@ function OrdonnateurDashboardContent() {
   const [verificationsMode, setVerificationsMode] = React.useState<'validation' | 'consultation'>('validation')
   const [verificationsStatus, setVerificationsStatus] = React.useState<Record<string, { completed: boolean, status: 'VALIDÉ' | 'EN_COURS' | 'REJETÉ' | null }>>({})
   const [verificationsSummary, setVerificationsSummary] = React.useState<any>(null)
+  const verificationsSubmitRef = React.useRef<(() => Promise<void>) | null>(null)
+  const verificationsSubmittingRef = React.useRef<boolean>(false)
+  const [verificationsSubmitting, setVerificationsSubmitting] = React.useState(false)
 
   // 🔥 Realtime: Écouter les changements de dossiers en temps réel
   const { updates, lastUpdate, isConnected } = useRealtimeDossiers({
@@ -155,9 +157,13 @@ function OrdonnateurDashboardContent() {
   })
 
   // Vérifier si l'utilisateur est autorisé à accéder au dashboard Ordonnateur
+  const hasRedirectedRef = React.useRef(false)
   React.useEffect(() => {
+    if (hasRedirectedRef.current) return
+
     if (user?.role && !isRoleAuthorizedForDashboard(user.role, 'ordonnateur')) {
       // Rediriger vers la page appropriée selon le rôle
+      hasRedirectedRef.current = true
       const redirectPath = getRoleRedirectPath(user.role)
       console.log(`🔀 Redirection ${user.role} depuis ordonnateur-dashboard vers: ${redirectPath}`)
       router.replace(redirectPath)
@@ -1059,14 +1065,46 @@ function OrdonnateurDashboardContent() {
                   onValidationComplete={handleVerificationsComplete}
                   onCancel={() => handleVerificationsComplete(false)}
                   mode={verificationsMode}
+                  onSubmitRef={verificationsSubmitRef}
+                  submittingRef={verificationsSubmittingRef}
                 />
               )}
             </div>
 
             <DialogFooter className="flex-shrink-0">
-              <Button variant="outline" onClick={() => handleVerificationsComplete(false)}>
-                Fermer
-              </Button>
+              {verificationsMode === 'validation' ? (
+                <>
+                  <Button variant="outline" onClick={() => handleVerificationsComplete(false)}>
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      if (verificationsSubmitRef.current) {
+                        setVerificationsSubmitting(true)
+                        await verificationsSubmitRef.current()
+                        setVerificationsSubmitting(false)
+                      }
+                    }}
+                    disabled={verificationsSubmitting || verificationsSubmittingRef.current}
+                  >
+                    {verificationsSubmitting || verificationsSubmittingRef.current ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Enregistrer les vérifications
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => handleVerificationsComplete(false)}>
+                  Fermer
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -47,6 +47,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   const [stats, setStats] = useState<NotificationStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isFetchingRef = React.useRef(false)
 
   // Charger les notifications
   const fetchNotifications = useCallback(async () => {
@@ -58,7 +59,14 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       return
     }
 
+    // Empêcher les appels multiples simultanés
+    if (isFetchingRef.current) {
+      console.log('🔒 NotificationsContext: Fetch déjà en cours, ignoré')
+      return
+    }
+
     try {
+      isFetchingRef.current = true
       setIsLoading(true)
       setError(null)
 
@@ -113,6 +121,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         urgentCount: 0
       })
     } finally {
+      isFetchingRef.current = false
       setIsLoading(false)
     }
   }, [user?.id])

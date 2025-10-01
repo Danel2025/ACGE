@@ -13,7 +13,7 @@ import { useDashboardData } from '@/hooks/use-dashboard-data'
 import type { DashboardStats, DashboardActivity } from '@/hooks/use-dashboard-data'
 import { formatFileSize, formatRelativeTime, getFileTypeLabel } from '@/lib/utils'
 import { redirectByRole, getRoleRedirectPath } from '@/lib/role-redirect'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { 
   FileText, 
   Folder, 
@@ -38,9 +38,13 @@ export default function DashboardPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useSupabaseAuth()
   const { stats, activity, isLoading, error, refreshData } = useDashboardData()
+  const hasRedirectedRef = useRef(false)
 
   // Redirection automatique basée sur le rôle
   useEffect(() => {
+    // Éviter les redirections multiples
+    if (hasRedirectedRef.current) return
+
     console.log('🔍 Dashboard useEffect - authLoading:', authLoading, 'user:', user)
 
     if (!authLoading && user && user.role) {
@@ -49,6 +53,7 @@ export default function DashboardPage() {
       // Seuls les admins restent sur cette page
       if (user.role !== 'ADMIN') {
         console.log(`🔀 Redirection ${user.role} vers page spécialisée`)
+        hasRedirectedRef.current = true
 
         const redirectPath = getRoleRedirectPath(user.role)
         console.log(`🎯 Redirection vers: ${redirectPath}`)
@@ -58,6 +63,7 @@ export default function DashboardPage() {
       }
     } else if (!authLoading && !user) {
       console.log('❌ Utilisateur non connecté, redirection vers login')
+      hasRedirectedRef.current = true
       router.replace('/login')
     } else {
       console.log('⏳ En attente du chargement ou utilisateur non connecté')
@@ -117,6 +123,12 @@ export default function DashboardPage() {
         a.download = fileName || 'document'
         document.body.appendChild(a)
         a.click()
+
+        // Vérifier que l'élément est bien un enfant du body avant de le supprimer
+        if (a.parentNode === document.body) {
+          document.body.removeChild(a)
+        }
+
         window.URL.revokeObjectURL(url)
       } else {
         console.error('Erreur lors du téléchargement')

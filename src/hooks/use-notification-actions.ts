@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Notification } from '@/types'
+import { downloadFile } from '@/lib/download-utils'
 
 interface UseNotificationActionsProps {
   notifications: Notification[]
@@ -33,14 +34,8 @@ export function useNotificationActions({ notifications, onRefresh }: UseNotifica
       ].join('\n')
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `notifications_${new Date().toISOString().split('T')[0]}.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const fileName = `notifications_${new Date().toISOString().split('T')[0]}.csv`
+      await downloadFile(blob, fileName)
     } catch (error) {
       console.error('Erreur lors de l\'export CSV:', error)
       throw error
@@ -73,14 +68,8 @@ export function useNotificationActions({ notifications, onRefresh }: UseNotifica
       `
 
       const blob = new Blob([pdfContent], { type: 'text/plain' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `notifications_${new Date().toISOString().split('T')[0]}.txt`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      const fileName = `notifications_${new Date().toISOString().split('T')[0]}.txt`
+      await downloadFile(blob, fileName)
     } catch (error) {
       console.error('Erreur lors de l\'export PDF:', error)
       throw error

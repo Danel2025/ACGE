@@ -10,7 +10,6 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Loader2,
   Settings,
   Database,
   ArrowLeft

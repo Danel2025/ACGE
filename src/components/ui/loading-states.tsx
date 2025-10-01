@@ -26,17 +26,19 @@ interface LoadingStateProps {
   color?: 'primary' | 'white' | 'destructive' | 'muted'
   showText?: boolean
   className?: string
+  noPadding?: boolean
 }
 
 export function LoadingState({
   isLoading,
   message = 'Chargement...',
   progress,
-  variant = 'bars',
+  variant = 'dots',
   size = 'md',
   color = 'primary',
   showText = true,
-  className = ''
+  className = '',
+  noPadding = false
 }: LoadingStateProps) {
 
   if (!isLoading) return null
@@ -99,7 +101,7 @@ export function LoadingState({
                   />
                 ))}
               </div>
-              {showText && <span className={textClass}>{message}</span>}
+              {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
             </div>
             {progress !== undefined && (
               <div className="space-y-2">
@@ -123,7 +125,7 @@ export function LoadingState({
               <div className="w-full h-full rounded-full bg-primary/40 animate-pulse absolute inset-0"
                    style={{ animationDelay: '0.5s' }}></div>
             </div>
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -150,7 +152,7 @@ export function LoadingState({
                 />
               ))}
             </div>
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -162,7 +164,7 @@ export function LoadingState({
               <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
               <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -170,7 +172,7 @@ export function LoadingState({
         return (
           <div className="flex items-center gap-3">
             <RefreshCw className={iconClass} />
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -178,7 +180,7 @@ export function LoadingState({
         return (
           <div className="flex items-center gap-3">
             <Trash2 className={iconClass} />
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -186,7 +188,7 @@ export function LoadingState({
         return (
           <div className="flex items-center gap-3">
             <Save className={iconClass} />
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -194,17 +196,14 @@ export function LoadingState({
         return (
           <div className="flex items-center gap-3">
             <LogIn className={iconClass} />
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
       case 'spinner':
         return (
           <div className="flex items-center gap-3">
-            <div className={`relative flex items-center justify-center`} style={{
-              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
-              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
-            }}>
+            <div className={`relative flex items-center justify-center ${sizeClasses[size]}`}>
               {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                 <div
                   key={i}
@@ -220,7 +219,7 @@ export function LoadingState({
                 />
               ))}
             </div>
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
 
@@ -228,10 +227,7 @@ export function LoadingState({
         // Default case for 'bars' variant and any other cases - same as explicit 'bars' case
         return (
           <div className="flex items-center gap-3">
-            <div className={`relative flex items-center justify-center`} style={{
-              width: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px',
-              height: size === 'sm' ? '16px' : size === 'md' ? '24px' : size === 'lg' ? '32px' : '40px'
-            }}>
+            <div className={`relative flex items-center justify-center ${sizeClasses[size]}`}>
               {[...Array(size === 'sm' ? 6 : size === 'md' ? 8 : size === 'lg' ? 8 : 10)].map((_, i) => (
                 <div
                   key={i}
@@ -247,14 +243,14 @@ export function LoadingState({
                 />
               ))}
             </div>
-            {showText && <span className={textClass}>{message}</span>}
+            {showText && <span className={`${textSizeClasses[size]} font-medium ${colorClasses[color]} leading-none`}>{message}</span>}
           </div>
         )
     }
   }
 
   return (
-    <div className={`p-4 ${className}`}>
+    <div className={`${noPadding ? '' : 'p-4'} ${className}`}>
       {renderLoadingContent()}
     </div>
   )
@@ -488,7 +484,7 @@ export function ButtonLoading({
   isLoading,
   loadingText,
   children,
-  variant = 'bars',
+  variant = 'dots',
   size = 'sm',
   color = 'primary',
   className = ''

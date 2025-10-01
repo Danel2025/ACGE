@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
@@ -53,25 +53,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     logUserChange('setUserWithLogging', newUser, oldUser)
   }
 
-  // Vérifier l'authentification au chargement
-  useEffect(() => {
-    checkAuth()
-    
-    // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          await loadUserData(session.user)
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const checkAuth = async () => {
+  // Rendre checkAuth stable avec useCallback
+  const checkAuthStable = useCallback(async () => {
     try {
       // SÉCURITÉ : Vérifier le consentement aux cookies avant de tenter une reconnexion automatique
       const sessionConsent = sessionStorage.getItem('cookie-consent')
@@ -156,7 +139,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.log('🔍 Vérification via Supabase Auth (dernier recours)...')
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        await loadUserData(session.user)
+        await loadUserDataStable(session.user)
       } else {
         console.log('❌ Aucune authentification trouvée')
         setUserWithLogging(null)
@@ -167,9 +150,10 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const loadUserData = async (authUser: any) => {
+  // Rendre loadUserData stable avec useCallback
+  const loadUserDataStable = useCallback(async (authUser: any) => {
     try {
       // Récupérer le token d'accès
       const { data: { session } } = await supabase.auth.getSession()
@@ -213,7 +197,26 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       console.error('Erreur loadUserData:', error)
       setUserWithLogging(null)
     }
-  }
+  }, [])
+
+  // Vérifier l'authentification au chargement
+  useEffect(() => {
+    checkAuthStable()
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          await loadUserDataStable(session.user)
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null)
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [checkAuthStable, loadUserDataStable])
+
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -323,12 +326,12 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   }
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     console.log('🔄 Forçage du rechargement des données utilisateur...')
     // Nettoyer le localStorage pour forcer un rechargement depuis l'API
     localStorage.removeItem('acge-auth')
-    await checkAuth()
-  }
+    await checkAuthStable()
+  }, [checkAuthStable])
 
   const resetAuthState = () => {
     console.log('🔄 Réinitialisation complète de l\'état d\'authentification...')

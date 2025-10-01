@@ -21,7 +21,6 @@ import { ChevronLeft,
   Music,
   Archive,
   FileSpreadsheet,
-  Loader2,
   AlertTriangle
  } from 'lucide-react'
 import { DocumentItem } from '@/types/document'

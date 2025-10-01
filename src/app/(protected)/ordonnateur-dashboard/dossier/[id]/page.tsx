@@ -43,7 +43,6 @@ import { CheckCircle,
   AlertTriangle,
   CheckCircle2,
   Info,
-  Loader2,
   Folder,
   Calendar,
   User,
@@ -748,7 +747,7 @@ function DossierDetailContent() {
                 {isDeleting ? (
                   <>
                     <div className="mr-2 h-4 w-4">
-                      <LoadingState isLoading={true} size="sm" showText={false} />
+                      <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                     </div>
                     Suppression...
                   </>

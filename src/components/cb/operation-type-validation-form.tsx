@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -17,11 +17,16 @@ import { LoadingState } from '@/components/ui/loading-states'
 import {
   CheckCircle,
   AlertTriangle,
-  Loader2,
   RefreshCw,
   FileText,
+  Eye,
+  Download,
+  ChevronRight,
+  ChevronLeft,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { DocumentPreviewModal } from '@/components/ui/document-preview-modal'
 
 // Types interfaces (groupés pour compacité)
 interface OperationData {
@@ -50,6 +55,7 @@ interface OperationTypeValidationFormProps {
   onValidationComplete: (success: boolean) => void
   onCancel: () => void
   mode?: 'validation' | 'consultation'
+  folderId?: string
 }
 
 // Hook utilitaire pour les données d'opération
@@ -99,6 +105,104 @@ const useOperationData = () => {
   }, [])
 
   return { types, natures, pieces, loading, error, setError, loadTypes, loadNatures, loadPieces }
+}
+
+// Hook pour charger les documents d'un dossier
+const useFolderDocuments = (folderId?: string, dossierId?: string) => {
+  const [documents, setDocuments] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadDocuments = useCallback(async () => {
+    // Essayer d'abord avec folderId, sinon avec dossierId
+    const queryParam = folderId ? `folderId=${folderId}` : dossierId ? `dossierId=${dossierId}` : null
+
+    if (!queryParam) {
+      console.warn('⚠️ Aucun folderId ou dossierId fourni pour charger les documents')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+      console.log(`📄 Chargement des documents avec: ${queryParam}`)
+      const response = await fetch(`/api/documents?${queryParam}`)
+      if (!response.ok) throw new Error('Erreur lors du chargement des documents')
+      const data = await response.json()
+      console.log(`✅ ${data.documents?.length || 0} documents chargés`)
+      setDocuments(data.documents || [])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erreur inconnue'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [folderId, dossierId])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
+
+  return { documents, loading, error, loadDocuments }
+}
+
+// Composant pour afficher les documents du dossier
+const DocumentsList = ({
+  documents,
+  loading,
+  onViewDocument
+}: {
+  documents: any[]
+  loading: boolean
+  onViewDocument: (doc: any) => void
+}) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <LoadingState isLoading={true} message="Chargement des documents..." />
+      </div>
+    )
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+        <FileText className="h-10 w-10 mb-2 opacity-50" />
+        <p className="text-sm">Aucun document dans ce dossier</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+      {documents.map((doc) => (
+        <div
+          key={doc.id}
+          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+          onClick={() => onViewDocument(doc)}
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <FileText className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{doc.fileName || doc.title}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-gray-500">
+                  {doc.fileSize ? `${(doc.fileSize / 1024 / 1024).toFixed(1)} MB` : 'N/A'}
+                </span>
+                {doc.category && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                    {doc.category}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <Eye className="h-4 w-4 text-gray-400 flex-shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 // Composant pour les sélections de type et nature
@@ -222,11 +326,29 @@ export function OperationTypeValidationForm({
   dossierNumero,
   onValidationComplete,
   onCancel,
-  mode = 'validation'
+  mode = 'validation',
+  folderId
 }: OperationTypeValidationFormProps) {
+  console.log('🔍 OperationTypeValidationForm - Props reçues:', { dossierId, dossierNumero, folderId, mode })
+
   const { types, natures, pieces, loading, error, setError, loadTypes, loadNatures, loadPieces } = useOperationData()
+  const { documents, loading: documentsLoading } = useFolderDocuments(folderId, dossierId)
   const [saving, setSaving] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showDocuments, setShowDocuments] = useState(true)
+  const [selectedDocument, setSelectedDocument] = useState<any>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  // Debug: Afficher l'état des documents
+  React.useEffect(() => {
+    console.log('📄 Documents état:', {
+      folderId,
+      documentsCount: documents.length,
+      documentsLoading,
+      showDocuments,
+      documents: documents.map(d => ({ id: d.id, title: d.title || d.fileName }))
+    })
+  }, [folderId, documents, documentsLoading, showDocuments])
 
   const [validationData, setValidationData] = useState<ValidationData>({
     type_operation_id: '',
@@ -277,6 +399,11 @@ export function OperationTypeValidationForm({
 
   const handleCommentChange = useCallback((commentaire: string) => {
     setValidationData(prev => ({ ...prev, commentaire }))
+  }, [])
+
+  const handleViewDocument = useCallback((doc: any) => {
+    setSelectedDocument(doc)
+    setPreviewOpen(true)
   }, [])
 
   // Validation et soumission
@@ -434,7 +561,7 @@ export function OperationTypeValidationForm({
               {saving ? (
                 <>
                   <div className="h-4 w-4 mr-2">
-                    <LoadingState isLoading={true} size="sm" showText={false} />
+                    <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                   </div>
                   Validation...
                 </>
@@ -452,22 +579,50 @@ export function OperationTypeValidationForm({
   if (loading) return <LoadingStateComponent />
   if (error) return <ErrorState />
 
+  // Debug: Afficher les informations du folderId
+  console.log('🎯 Rendu du composant - folderId:', folderId, 'Type:', typeof folderId)
+
   return (
     <>
-      <Card className="w-full max-w-2xl mx-auto" onClick={(e) => e.stopPropagation()}>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-2 text-lg">
-            <FileText className="h-4 w-4" />
-            <span>
-              {mode === 'consultation' ? 'Consultation du Type d\'Opération' : 'Validation du Type d\'Opération'}
-            </span>
-          </CardTitle>
-          <div className="text-xs text-gray-600">
-            Dossier: <span className="font-medium">{dossierNumero}</span>
-          </div>
-        </CardHeader>
+      <div className="w-full max-w-7xl mx-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Colonne gauche: Formulaire */}
+          <Card className="w-full">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4" />
+                  <CardTitle className="text-lg">
+                    {mode === 'consultation' ? 'Consultation du Type d\'Opération' : 'Validation du Type d\'Opération'}
+                  </CardTitle>
+                </div>
+                {folderId && documents.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDocuments(!showDocuments)}
+                    className="h-8 px-2"
+                  >
+                    {showDocuments ? (
+                      <>
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Masquer documents
+                      </>
+                    ) : (
+                      <>
+                        <ChevronRight className="h-4 w-4 mr-1" />
+                        Afficher documents
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+              <div className="text-xs text-gray-600">
+                Dossier: <span className="font-medium">{dossierNumero}</span>
+              </div>
+            </CardHeader>
 
-        <CardContent className="space-y-4">
+            <CardContent className="space-y-4">
           {/* Sélection du type d'opération */}
           <OperationTypeSelector
             types={types}
@@ -523,41 +678,84 @@ export function OperationTypeValidationForm({
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-2 border-t">
-            <Button variant="outline" onClick={onCancel}>
-              {mode === 'consultation' ? 'Fermer' : 'Annuler'}
-            </Button>
-            {mode === 'validation' && (
-              <Button
-                onClick={(e) => {
-                  console.log('🔵 Clic sur le bouton Valider')
-                  e.stopPropagation()
-                  handleSubmit()
-                }}
-                disabled={saving || !isFormValid}
-              >
-                {saving ? (
-                  <>
-                    <div className="h-4 w-4 mr-2">
-                      <LoadingState isLoading={true} size="sm" showText={false} />
-                    </div>
-                    Enregistrement...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Valider
-                  </>
+              {/* Actions */}
+              <div className="flex justify-end space-x-2 pt-2 border-t">
+                <Button variant="outline" onClick={onCancel}>
+                  {mode === 'consultation' ? 'Fermer' : 'Annuler'}
+                </Button>
+                {mode === 'validation' && (
+                  <Button
+                    onClick={(e) => {
+                      console.log('🔵 Clic sur le bouton Valider')
+                      e.stopPropagation()
+                      handleSubmit()
+                    }}
+                    disabled={saving || !isFormValid}
+                  >
+                    {saving ? (
+                      <>
+                        <div className="h-4 w-4 mr-2">
+                          <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
+                        </div>
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Valider
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Colonne droite: Documents */}
+          <Card className="w-full">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center space-x-2 text-lg">
+                <FileText className="h-4 w-4" />
+                <span>Documents du dossier</span>
+              </CardTitle>
+              <div className="text-xs text-gray-600">
+                {documentsLoading ? 'Chargement...' : `${documents.length} document${documents.length > 1 ? 's' : ''}`}
+                {!folderId && (
+                  <span className="text-orange-500 ml-2">(via dossierId)</span>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!showDocuments ? (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  Documents masqués - Cliquez sur "Afficher documents" pour les voir
+                </div>
+              ) : (
+                <DocumentsList
+                  documents={documents}
+                  loading={documentsLoading}
+                  onViewDocument={handleViewDocument}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Dialog de confirmation */}
       {showConfirmDialog && <ConfirmationDialog />}
+
+      {/* Modal de prévisualisation des documents */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          document={selectedDocument}
+          isOpen={previewOpen}
+          onClose={() => {
+            setPreviewOpen(false)
+            setSelectedDocument(null)
+          }}
+        />
+      )}
     </>
   )
 }

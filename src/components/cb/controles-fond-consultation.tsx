@@ -69,7 +69,7 @@ export function ControlesFondConsultation({
 
   // Grouper les validations par catégorie
   const validationsParCategorie = validations.reduce((acc, validation) => {
-    const categorie = validation.controle_fond.categorie.nom
+    const categorie = validation.controle_fond?.categorie?.nom || 'Non catégorisé'
     if (!acc[categorie]) {
       acc[categorie] = []
     }
@@ -79,7 +79,7 @@ export function ControlesFondConsultation({
 
   const totalControles = validations.length
   const controlesValides = validations.filter(v => v.valide).length
-  const controlesObligatoires = validations.filter(v => v.controle_fond.obligatoire)
+  const controlesObligatoires = validations.filter(v => v.controle_fond?.obligatoire)
   const controlesObligatoiresValides = controlesObligatoires.filter(v => v.valide).length
 
   if (loading) {
@@ -207,16 +207,16 @@ export function ControlesFondConsultation({
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className={`font-medium ${validation.valide ? 'text-green-800' : 'text-red-800'}`}>
-                        {validation.controle_fond.nom}
+                        {validation.controle_fond?.nom || 'Contrôle inconnu'}
                       </span>
-                      {validation.controle_fond.obligatoire && (
+                      {validation.controle_fond?.obligatoire && (
                         <Badge variant="outline" className="text-xs">
                           Obligatoire
                         </Badge>
                       )}
                     </div>
-                    
-                    {validation.controle_fond.description && (
+
+                    {validation.controle_fond?.description && (
                       <p className="text-sm text-gray-600">
                         {validation.controle_fond.description}
                       </p>

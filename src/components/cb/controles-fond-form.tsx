@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingState } from '@/components/ui/loading-states'
-import { Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ControleFond {
@@ -135,9 +135,9 @@ export function ControlesFondForm({
   const confirmValidation = async () => {
     try {
       setSaving(true)
-      
+
       console.log('🔍 Validation des contrôles de fond pour le dossier:', dossierId)
-      
+
       // Vérifier d'abord le statut du dossier
       try {
         const statusResponse = await fetch(`/api/dossiers/${dossierId}`)
@@ -153,7 +153,7 @@ export function ControlesFondForm({
       } catch (statusError) {
         console.warn('⚠️ Impossible de vérifier le statut du dossier:', statusError)
       }
-      
+
       // Récupérer les informations utilisateur
       let userData: { id?: string; role?: string } = {}
       try {
@@ -162,7 +162,7 @@ export function ControlesFondForm({
       } catch (e) {
         console.warn('⚠️ Impossible de récupérer les données utilisateur du localStorage')
       }
-      
+
       // Si pas d'utilisateur dans localStorage, utiliser un ID utilisateur CB valide
       if (!userData.id || !userData.role) {
         console.warn('⚠️ Utilisateur non authentifié, utilisation d\'un ID utilisateur CB valide')
@@ -171,16 +171,25 @@ export function ControlesFondForm({
           role: 'CONTROLEUR_BUDGETAIRE'
         }
       }
-      
+
       // Vérifier et forcer le rôle CB
       if (userData.role !== 'CONTROLEUR_BUDGETAIRE') {
         console.warn('⚠️ Rôle utilisateur incorrect:', userData.role, '- Forçage du rôle CB')
         userData.role = 'CONTROLEUR_BUDGETAIRE'
       }
-      
-      // Préparer les données de validation
-      const validationsArray = Object.values(validations).filter(v => v.controle_fond_id)
-      
+
+      // Préparer les données de validation - inclure TOUS les contrôles
+      // Pour les contrôles non cochés, on envoie valide: false
+      const allControles = categories.flatMap(cat => cat.controles)
+      const validationsArray = allControles.map(controle => {
+        const existingValidation = validations[controle.id]
+        return {
+          controle_fond_id: controle.id,
+          valide: existingValidation?.valide || false,
+          commentaire: existingValidation?.commentaire || null
+        }
+      })
+
       console.log('🔍 Données de validation contrôles de fond:', validationsArray)
       console.log('🔍 Données utilisateur:', userData)
       

@@ -35,7 +35,10 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
           if (target.hasAttribute('data-state')) {
             const state = target.getAttribute('data-state')
             const isOpen = state === 'open'
-            setModalOpen(isOpen)
+            // Utiliser setIsModalOpen directement avec une fonction callback
+            // pour éviter les re-renders inutiles et les boucles infinies
+            setIsModalOpen(prev => prev !== isOpen ? isOpen : prev)
+            setHideHeader(prev => prev !== isOpen ? isOpen : prev)
           }
         }
       })

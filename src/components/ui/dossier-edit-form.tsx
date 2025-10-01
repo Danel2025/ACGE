@@ -33,7 +33,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LoadingState } from '@/components/ui/loading-states'
-import { Loader2, AlertTriangle, Save, X, FileText, User, Building, Tag } from 'lucide-react'
+import { AlertTriangle, Save, X, FileText, User, Building, Tag } from 'lucide-react'
 
 interface PosteComptable {
   id: string
@@ -430,7 +430,7 @@ export function DossierEditForm({ dossier, isOpen, onClose, onSave }: DossierEdi
                           {isLoadingReferences ? (
                             <SelectItem value="loading" disabled>
                               <div className="mr-2 h-4 w-4">
-                                <LoadingState isLoading={true} size="sm" showText={false} />
+                                <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                               </div>
                               Chargement...
                             </SelectItem>
@@ -473,7 +473,7 @@ export function DossierEditForm({ dossier, isOpen, onClose, onSave }: DossierEdi
                           {isLoadingReferences ? (
                             <SelectItem value="loading" disabled>
                               <div className="mr-2 h-4 w-4">
-                                <LoadingState isLoading={true} size="sm" showText={false} />
+                                <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                               </div>
                               Chargement...
                             </SelectItem>

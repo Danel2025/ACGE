@@ -21,9 +21,10 @@ import { FileText,
   Download,
   ExternalLink,
   AlertTriangle,
-  Loader2,
   X,
   Calendar,
+  Maximize,
+  Minimize,
 } from 'lucide-react'
 import { LoadingState } from '@/components/ui/loading-states'
 import {
@@ -64,29 +65,56 @@ export function DocumentPreviewModal({
   const [isDownloading, setIsDownloading] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
 
-  // Fonction de téléchargement
+  // Fonction de téléchargement - Version drastique sans manipulation DOM
   const handleDownload = async () => {
     if (!document) return
-    
+
     setIsDownloading(true)
     try {
       const documentId = document.originalId || document.id
       const response = await fetch(`/api/files/${documentId}`)
-      
+
       if (!response.ok) {
         throw new Error('Erreur lors du téléchargement')
       }
-      
+
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const link = window.document.createElement('a')
-      link.href = url
-      link.download = document.fileName || document.title || 'document'
-      window.document.body.appendChild(link)
-      link.click()
-      window.document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      
+      const fileName = document.fileName || document.title || 'document'
+
+      // Méthode moderne sans createElement
+      if ('showSaveFilePicker' in window) {
+        // API File System Access (Chrome, Edge moderne)
+        try {
+          const handle = await (window as any).showSaveFilePicker({
+            suggestedName: fileName,
+          })
+          const writable = await handle.createWritable()
+          await writable.write(blob)
+          await writable.close()
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            // Fallback si l'utilisateur annule
+            throw err
+          }
+        }
+      } else {
+        // Fallback pour les navigateurs plus anciens - Version ultra-simple
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName
+
+        // Déclencher le téléchargement sans ajouter au DOM
+        a.dispatchEvent(new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        }))
+
+        // Nettoyer immédiatement
+        URL.revokeObjectURL(url)
+      }
+
       // Appeler la fonction onDownload si fournie
       if (onDownload) {
         onDownload(document)
@@ -257,8 +285,8 @@ export function DocumentPreviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-5xl max-h-[98vh] p-0" showCloseButton={false}>
-        <DialogHeader className="p-1 pb-1">
+      <DialogContent className={cn("p-0 z-[10001] transition-all duration-300 flex flex-col", showFullscreen ? "max-w-[98vw] w-[98vw] max-h-[98vh] h-[98vh]" : "max-w-5xl max-h-[98vh]")} showCloseButton={false}>
+        <DialogHeader className={cn(showFullscreen ? "p-1 pb-0 flex-shrink-0" : "p-1 pb-1")}>
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-2">
               {getFileIcon(fileType)}
@@ -271,16 +299,28 @@ export function DocumentPreviewModal({
                 </DialogDescription>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFullscreen(!showFullscreen)}
+              className="ml-2"
+            >
+              {showFullscreen ? (
+                <Minimize className="h-4 w-4" />
+              ) : (
+                <Maximize className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </DialogHeader>
 
-        <Separator />
+        {!showFullscreen && <Separator />}
 
-        <div className="flex-1 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
+        <div className="flex-1 overflow-hidden min-h-0">
+          <div className={cn("grid gap-0 h-full", showFullscreen ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3")}>
             {/* Zone de prévisualisation */}
-            <div className="lg:col-span-2 flex flex-col">
-              <div className="flex-1 bg-muted/20 flex items-center justify-center p-1">
+            <div className={cn("flex flex-col h-full", showFullscreen ? "col-span-1" : "lg:col-span-2")}>
+              <div className={cn("flex-1 flex items-center justify-center", showFullscreen ? "p-0 bg-transparent" : "p-1 bg-muted/20")}>
                 {isLoading ? (
                   <div className="flex flex-col items-center space-y-2">
                     <LoadingState isLoading={true} message="Chargement de la prévisualisation..." />
@@ -395,7 +435,7 @@ export function DocumentPreviewModal({
                     ) : fileType?.includes('pdf') ? (
                       <iframe
                         src={previewUrl}
-                        className="w-full h-full rounded-lg shadow-lg"
+                        className={cn("w-full h-full", showFullscreen ? "rounded-none" : "rounded-lg shadow-lg")}
                         title={document.title}
                         onError={() => setError("Impossible de charger le PDF")}
                       />
@@ -435,7 +475,7 @@ export function DocumentPreviewModal({
             </div>
 
             {/* Panneau d'informations */}
-            <div className="lg:col-span-1 border-l bg-muted/5">
+            <div className={cn("lg:col-span-1 border-l bg-muted/5", showFullscreen && "hidden")}>
               <ScrollArea className="h-full">
                 <div className="p-3 space-y-3">
                   {/* Informations générales */}
@@ -533,7 +573,7 @@ export function DocumentPreviewModal({
                       >
                         {isDownloading ? (
                           <div className="h-4 w-4 mr-2">
-                            <LoadingState isLoading={true} size="sm" showText={false} />
+                            <LoadingState isLoading={true} size="sm" showText={false} noPadding={true} />
                           </div>
                         ) : (
                           <Download className="h-4 w-4 mr-2" />

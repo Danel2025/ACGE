@@ -218,7 +218,9 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, no-cache, stale-while-revalidate=3600'
+            value: process.env.NODE_ENV === 'development'
+              ? 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
+              : 'public, no-cache, stale-while-revalidate=3600'
           },
           {
             key: 'X-DNS-Prefetch-Control',
