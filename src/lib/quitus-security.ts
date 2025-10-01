@@ -32,10 +32,38 @@ export function generateQuitusHash(quitusData: any): string {
 export async function generateQuitusQRCode(
   numeroQuitus: string,
   hash: string,
-  baseUrl: string = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  baseUrl?: string
 ): Promise<string> {
-  // URL de vérification
-  const verificationUrl = `${baseUrl}/verify-quitus/${numeroQuitus}?hash=${hash}`
+  // Déterminer l'URL de base avec fallback intelligent
+  let resolvedBaseUrl = baseUrl
+
+  if (!resolvedBaseUrl) {
+    // Priorité 1 : NEXT_PUBLIC_APP_URL (variable dédiée pour l'app)
+    resolvedBaseUrl = process.env.NEXT_PUBLIC_APP_URL
+
+    // Priorité 2 : NEXTAUTH_URL (déjà configurée)
+    if (!resolvedBaseUrl) {
+      resolvedBaseUrl = process.env.NEXTAUTH_URL
+    }
+
+    // Priorité 3 : Détecter si on est en production Vercel
+    if (!resolvedBaseUrl && process.env.VERCEL_URL) {
+      resolvedBaseUrl = `https://${process.env.VERCEL_URL}`
+    }
+
+    // Fallback : localhost pour le développement
+    if (!resolvedBaseUrl) {
+      resolvedBaseUrl = 'http://localhost:3000'
+    }
+  }
+
+  // Nettoyer l'URL (supprimer le trailing slash)
+  resolvedBaseUrl = resolvedBaseUrl.replace(/\/$/, '')
+
+  // URL de vérification complète
+  const verificationUrl = `${resolvedBaseUrl}/verify-quitus/${numeroQuitus}?hash=${hash}`
+
+  console.log('🔐 Génération du QR code pour:', verificationUrl)
 
   try {
     // Générer le QR code en base64
@@ -50,9 +78,10 @@ export async function generateQuitusQRCode(
       }
     })
 
+    console.log('✅ QR code généré avec succès')
     return qrCodeDataUrl
   } catch (error) {
-    console.error('Erreur génération QR code:', error)
+    console.error('❌ Erreur génération QR code:', error)
     throw error
   }
 }

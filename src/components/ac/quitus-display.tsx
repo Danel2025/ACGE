@@ -238,24 +238,22 @@ export function QuitusDisplay({ quitus, dossierId, onDownload, onPrint }: Quitus
           <Download className="h-4 w-4" />
           Télécharger PDF
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => {
+            console.log('🖨️ Clic sur Imprimer')
+            console.log('📋 dossierId:', dossierId)
+            console.log('📋 quitus:', quitus)
+
             if (dossierId) {
+              console.log('✅ DossierId trouvé, ouverture de /print-quitus/' + dossierId)
               // Ouvrir la page d'impression dédiée qui génère un vrai document
               window.open(`/print-quitus/${dossierId}`, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
             } else {
-              // Fallback : essayer d'extraire l'ID depuis le quitus
-              const numeroQuitus = quitus?.numeroQuitus || ''
-              const match = numeroQuitus.match(/DOSS-ACGE-(\d+)/)
-              if (match) {
-                // Rechercher le dossier correspondant
-                window.open(`/print-quitus/search?numero=${match[1]}`, '_blank')
-              } else {
-                alert('Impossible d\'imprimer : ID du dossier non trouvé')
-              }
+              console.warn('⚠️ Pas de dossierId, tentative de fallback')
+              alert('Erreur : ID du dossier non disponible. Veuillez fermer et réouvrir le quitus.')
             }
-          }} 
+          }}
           className="flex items-center gap-2"
         >
           <Printer className="h-4 w-4" />
