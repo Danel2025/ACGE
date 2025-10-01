@@ -157,8 +157,7 @@ export async function POST(
         beneficiaire: dossier.beneficiaire,
         posteComptable: dossier.poste_comptable?.intitule || 'Non défini',
         natureDocument: dossier.nature_document?.nom || 'Non défini',
-        dateDepot: dossier.dateDepot,
-        montantOrdonnance: dossier.montantOrdonnance || 0
+        dateDepot: dossier.dateDepot
       },
       
       // Historique des validations

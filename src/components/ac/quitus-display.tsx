@@ -5,14 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { 
-  FileText, 
-  Download, 
-  CheckCircle, 
-  XCircle, 
+import {
+  FileText,
+  Download,
+  CheckCircle,
+  XCircle,
   Calendar,
   User,
-  DollarSign,
   Building,
   Eye,
   Printer
@@ -37,12 +36,6 @@ export function QuitusDisplay({ quitus, dossierId, onDownload, onPrint }: Quitus
     })
   }
 
-  const formatMontant = (montant: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XAF'
-    }).format(montant)
-  }
 
   return (
     <div id="quitus-container" className="quitus-container quitus-print quitus-modal-container" role="dialog">
@@ -81,10 +74,8 @@ export function QuitusDisplay({ quitus, dossierId, onDownload, onPrint }: Quitus
               <td className="quitus-grid-cell value">{formatDate(quitus.dossier.dateDepot)}</td>
             </tr>
             <tr className="quitus-grid-row">
-              <td className="quitus-grid-cell label">Montant</td>
-              <td className="quitus-grid-cell value">{formatMontant(quitus.dossier.montantOrdonnance)}</td>
               <td className="quitus-grid-cell label">Poste comptable</td>
-              <td className="quitus-grid-cell value">{quitus.dossier.posteComptable}</td>
+              <td className="quitus-grid-cell value" colSpan={3}>{quitus.dossier.posteComptable}</td>
             </tr>
             <tr className="quitus-grid-row">
               <td className="quitus-grid-cell label">Objet</td>
