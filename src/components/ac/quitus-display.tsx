@@ -167,7 +167,7 @@ export function QuitusDisplay({ quitus, dossierId, onDownload, onPrint }: Quitus
         <div className="quitus-conclusion-text">
           {quitus.conclusion.recommandations}
         </div>
-        
+
         {/* Signature */}
         <div className="quitus-signature">
           <div>
@@ -181,6 +181,41 @@ export function QuitusDisplay({ quitus, dossierId, onDownload, onPrint }: Quitus
           </div>
         </div>
       </div>
+
+      {/* Sécurité et vérification */}
+      {quitus.securite && (
+        <div className="quitus-section" style={{ marginTop: '30px', borderTop: '2px solid #ccc', paddingTop: '20px' }}>
+          <h3>INFORMATIONS DE SÉCURITÉ</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Hash de vérification:</strong>
+                <div style={{ fontFamily: 'monospace', fontSize: '12px', marginTop: '5px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                  {quitus.securite.hash}
+                </div>
+              </div>
+              <div style={{ marginBottom: '10px' }}>
+                <strong>Document:</strong> <span style={{ color: '#007bff', fontWeight: 'bold' }}>{quitus.securite.watermark}</span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#666' }}>
+                Pour vérifier l'authenticité de ce document, scannez le QR code ou visitez:
+                <br />
+                <code style={{ fontSize: '10px' }}>{process.env.NEXT_PUBLIC_APP_URL}/verify-quitus/{quitus.numeroQuitus}</code>
+              </div>
+            </div>
+            {quitus.securite.qrCode && (
+              <div style={{ marginLeft: '20px', textAlign: 'center' }}>
+                <img
+                  src={quitus.securite.qrCode}
+                  alt="QR Code de vérification"
+                  style={{ width: '120px', height: '120px', border: '1px solid #ccc' }}
+                />
+                <div style={{ fontSize: '10px', marginTop: '5px' }}>Scannez pour vérifier</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Actions (masquées à l'impression) */}
       <div className="flex justify-center gap-4 print:hidden">

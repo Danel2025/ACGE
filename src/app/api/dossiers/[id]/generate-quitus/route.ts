@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { CacheRevalidation } from '@/lib/revalidation-utils'
+import { generateQuitusHash, generateQuitusQRCode, generateQuitusNumber } from '@/lib/quitus-security'
+import { sendQuitusEmail } from '@/lib/email-service'
+import { archiveQuitus } from '@/lib/quitus-archive'
 
 /**
  * 📄 API GÉNÉRATION QUITUS - ACGE
@@ -139,11 +142,12 @@ export async function POST(
       })
     }
 
-    // 3. Générer les données du quitus
-    const timestamp = Date.now()
+    // 3. Générer les données du quitus avec sécurité
+    const numeroQuitus = generateQuitusNumber(dossier.numeroDossier)
+
     const quitusData = {
       // Informations générales
-      numeroQuitus: `QUITUS-${dossier.numeroDossier}-${new Date().getFullYear()}-${timestamp}`,
+      numeroQuitus,
       dateGeneration: new Date().toISOString(),
       
       // Informations du dossier
@@ -210,8 +214,8 @@ export async function POST(
       // Conclusion
       conclusion: {
         conforme: rapport.incoherences.length === 0,
-        recommandations: rapport.incoherences.length > 0 
-          ? 'Des incohérences ont été détectées et doivent être résolues.' 
+        recommandations: rapport.incoherences.length > 0
+          ? 'Des incohérences ont été détectées et doivent être résolues.'
           : 'Toutes les vérifications sont conformes. Le dossier peut être traité.',
         signature: {
           fonction: 'Agent Comptable',
@@ -219,6 +223,20 @@ export async function POST(
           lieu: 'Libreville, Gabon'
         }
       }
+    }
+
+    // Générer le hash de vérification
+    const verificationHash = generateQuitusHash(quitusData)
+
+    // Générer le QR code
+    const qrCodeDataUrl = await generateQuitusQRCode(numeroQuitus, verificationHash)
+
+    // Ajouter les informations de sécurité au quitus
+    quitusData.securite = {
+      hash: verificationHash,
+      qrCode: qrCodeDataUrl,
+      watermark: 'ORIGINAL',
+      dateGeneration: new Date().toISOString()
     }
 
     // 4. Sauvegarder le quitus en base de données
@@ -240,6 +258,74 @@ export async function POST(
     }
 
     console.log('✅ Quitus généré avec succès:', quitusData.numeroQuitus)
+
+    // 5. Mettre à jour le statut du dossier à TERMINÉ
+    const { error: updateError } = await admin
+      .from('dossiers')
+      .update({
+        statut: 'TERMINÉ',
+        quitus_numero: numeroQuitus,
+        termine_le: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', dossierId)
+
+    if (updateError) {
+      console.warn('⚠️ Erreur mise à jour statut dossier:', updateError)
+    } else {
+      console.log('✅ Statut du dossier mis à jour : TERMINÉ')
+    }
+
+    // 6. Créer une notification pour toutes les parties prenantes
+    const notificationsToCreate = [
+      {
+        user_id: dossier.secretaire?.id,
+        type: 'QUITUS_GENERE',
+        title: 'Quitus généré',
+        message: `Le quitus ${numeroQuitus} a été généré pour le dossier ${dossier.numeroDossier}`,
+        dossier_id: dossierId,
+        metadata: {
+          numeroQuitus,
+          verificationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/verify-quitus/${numeroQuitus}`
+        }
+      }
+    ]
+
+    // Ajouter les notifications
+    const { error: notifError } = await admin
+      .from('notifications')
+      .insert(notificationsToCreate)
+
+    if (notifError) {
+      console.warn('⚠️ Erreur création notifications:', notifError)
+    } else {
+      console.log('✅ Notifications créées pour les parties prenantes')
+    }
+
+    // 7. Archiver le quitus de manière sécurisée
+    const archiveResult = await archiveQuitus(numeroQuitus, quitusData)
+
+    if (archiveResult.success) {
+      console.log('✅ Quitus archivé avec succès')
+      console.log('📦 URL d\'accès:', archiveResult.archiveUrl)
+    } else {
+      console.warn('⚠️ Erreur archivage quitus:', archiveResult.error)
+    }
+
+    // 8. Envoyer l'email avec le quitus (si email configuré)
+    if (dossier.secretaire?.email) {
+      const emailResult = await sendQuitusEmail(
+        dossier.secretaire.email,
+        dossier.secretaire.name || 'Secrétaire',
+        quitusData
+      )
+
+      if (emailResult.success) {
+        console.log('✅ Email envoyé à:', dossier.secretaire.email)
+      } else {
+        console.warn('⚠️ Erreur envoi email:', emailResult.error)
+      }
+    }
 
     // 🔄 REVALIDATION DU CACHE
     try {

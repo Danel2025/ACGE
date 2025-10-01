@@ -13,6 +13,7 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, Info } from 'lucide-react'
 import { RapportVerification } from '@/components/ac/rapport-verification'
+import { RapportComparatif } from '@/components/ac/rapport-comparatif'
 import { QuitusDisplay } from '@/components/ac/quitus-display'
 import { ACStatusNavigation } from '@/components/ac/ac-status-navigation'
 import { DossierContentModal } from '@/components/ui/dossier-content-modal'
@@ -116,9 +117,15 @@ function ACDashboardContent() {
   // États pour le rapport de vérification
   const [rapportOpen, setRapportOpen] = React.useState(false)
   const [validationDefinitiveOpen, setValidationDefinitiveOpen] = React.useState(false)
+  const rapportValidateRef = React.useRef<(() => void) | null>(null)
+  const rapportRejectRef = React.useRef<(() => void) | null>(null)
+  const rapportCanValidateRef = React.useRef<boolean>(false)
 
   // État pour la modal de détails
   const [detailsOpen, setDetailsOpen] = React.useState(false)
+
+  // États pour le rapport comparatif
+  const [rapportComparatifOpen, setRapportComparatifOpen] = React.useState(false)
 
   // États pour le quitus
   const [quitusOpen, setQuitusOpen] = React.useState(false)
@@ -144,9 +151,13 @@ function ACDashboardContent() {
   })
 
   // Vérifier si l'utilisateur est autorisé à accéder au dashboard AC
+  const hasRedirectedRef = React.useRef(false)
   React.useEffect(() => {
+    if (hasRedirectedRef.current) return
+
     if (user?.role && !isRoleAuthorizedForDashboard(user.role, 'ac')) {
       // Rediriger vers la page appropriée selon le rôle
+      hasRedirectedRef.current = true
       const redirectPath = getRoleRedirectPath(user.role)
       console.log(`🔀 Redirection ${user.role} depuis ac-dashboard vers: ${redirectPath}`)
       router.replace(redirectPath)
@@ -586,12 +597,12 @@ function ACDashboardContent() {
                                 <DropdownMenuItem onClick={(e) => {
                                   e.stopPropagation()
                                   setSelectedDossier(dossier)
-                                  setRapportOpen(true)
+                                  setRapportComparatifOpen(true)
                                 }}>
                                   <ClipboardCheck className="mr-2 h-5 w-5" />
-                                  Rapport de vérification
+                                  Rapport comparatif CB/Ordonnateur
                                 </DropdownMenuItem>
-                                
+
                                 <DropdownMenuItem onClick={(e) => {
                                   e.stopPropagation()
                                   setSelectedDossier(dossier)
@@ -599,6 +610,20 @@ function ACDashboardContent() {
                                 }}>
                                   <FileCheck className="mr-2 h-5 w-5" />
                                   Validation définitive
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+
+                            {dossier.statut === 'VALIDÉ_DÉFINITIVEMENT' && (
+                              <>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedDossier(dossier)
+                                  setRapportOpen(true)
+                                }}>
+                                  <ClipboardCheck className="mr-2 h-5 w-5" />
+                                  Rapport de vérification
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                               </>
@@ -679,17 +704,17 @@ function ACDashboardContent() {
 
         {/* Modal du rapport de vérification */}
         <Dialog open={rapportOpen} onOpenChange={setRapportOpen}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" showCloseButton={false}>
             <DialogHeader>
               <DialogTitle>Rapport de Vérification</DialogTitle>
               <DialogDescription>
                 Rapport complet des vérifications CB et Ordonnateur pour le dossier {selectedDossier?.numeroDossier}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="flex-1 overflow-auto">
               {selectedDossier && (
-                <RapportVerification 
+                <RapportVerification
                   dossierId={selectedDossier.id}
                   onValidationComplete={(validated) => {
                     setRapportOpen(false)
@@ -697,9 +722,43 @@ function ACDashboardContent() {
                       setValidationDefinitiveOpen(true)
                     }
                   }}
+                  onValidateRef={rapportValidateRef}
+                  onRejectRef={rapportRejectRef}
+                  canValidateRef={rapportCanValidateRef}
                 />
               )}
             </div>
+
+            <DialogFooter className="flex-shrink-0">
+              <Button variant="outline" onClick={() => setRapportOpen(false)}>
+                Fermer
+              </Button>
+              {selectedDossier && selectedDossier.statut !== 'VALIDÉ_DÉFINITIVEMENT' && selectedDossier.statut !== 'TERMINÉ' && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (rapportRejectRef.current) {
+                        rapportRejectRef.current()
+                      }
+                    }}
+                  >
+                    Rejeter le dossier
+                  </Button>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => {
+                      if (rapportValidateRef.current) {
+                        rapportValidateRef.current()
+                      }
+                    }}
+                    disabled={!rapportCanValidateRef.current}
+                  >
+                    Valider définitivement
+                  </Button>
+                </>
+              )}
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -782,6 +841,30 @@ function ACDashboardContent() {
             </div>
           </DialogContent>
         </Dialog>
+
+      {/* Modal du rapport comparatif */}
+      <Dialog open={rapportComparatifOpen} onOpenChange={setRapportComparatifOpen}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Rapport Comparatif CB / Ordonnateur</DialogTitle>
+            <DialogDescription>
+              Comparaison des validations et commentaires généraux pour le dossier {selectedDossier?.numeroDossier}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto">
+            {selectedDossier && (
+              <RapportComparatif dossierId={selectedDossier.id} />
+            )}
+          </div>
+
+          <DialogFooter className="flex-shrink-0">
+            <Button variant="outline" onClick={() => setRapportComparatifOpen(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de détails du dossier */}
       <DossierContentModal

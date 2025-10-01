@@ -25,12 +25,18 @@ export async function GET(
       )
     }
     
-    // Récupérer les validations des contrôles de fond
+    // Récupérer les validations des contrôles de fond avec les relations
     console.log('🔍 Recherche des validations pour dossier_id:', dossierId)
 
     const { data: validations, error: validationsError } = await admin
       .from('validations_controles_fond')
-      .select('*')
+      .select(`
+        *,
+        controle:controles_fond!controle_fond_id(
+          *,
+          categorie:categories_controles_fond(*)
+        )
+      `)
       .eq('dossier_id', dossierId)
 
     console.log('🔍 Résultat requête validations:', {

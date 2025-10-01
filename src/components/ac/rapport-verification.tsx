@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -16,32 +16,161 @@ import {
   Calendar,
   DollarSign,
   Eye,
-  Download,
-  Loader2
+  Download
 } from 'lucide-react'
 import { useErrorHandler } from '@/components/ui/error-display'
 import { useLoadingStates } from '@/components/ui/loading-states'
+import { DocumentPreviewModal } from '@/components/ui/document-preview-modal'
+import { toast } from 'sonner'
 
 interface RapportVerificationProps {
   dossierId: string
   onValidationComplete?: (validated: boolean) => void
+  folderId?: string
+  onValidateRef?: React.MutableRefObject<(() => void) | null>
+  onRejectRef?: React.MutableRefObject<(() => void) | null>
+  canValidateRef?: React.MutableRefObject<boolean>
 }
 
-export function RapportVerification({ dossierId, onValidationComplete }: RapportVerificationProps) {
+// Hook pour charger les documents d'un dossier
+const useFolderDocuments = (folderId?: string, dossierId?: string) => {
+  const [documents, setDocuments] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadDocuments = useCallback(async () => {
+    const queryParam = folderId ? `folderId=${folderId}` : dossierId ? `dossierId=${dossierId}` : null
+
+    if (!queryParam) {
+      console.warn('⚠️ Aucun folderId ou dossierId fourni pour charger les documents')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+      console.log(`📄 Chargement des documents avec: ${queryParam}`)
+      const response = await fetch(`/api/documents?${queryParam}`)
+      if (!response.ok) throw new Error('Erreur lors du chargement des documents')
+      const data = await response.json()
+      console.log(`✅ ${data.documents?.length || 0} documents chargés`)
+      setDocuments(data.documents || [])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erreur inconnue'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [folderId, dossierId])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
+
+  return { documents, loading, error, loadDocuments }
+}
+
+// Composant pour afficher les documents du dossier
+const DocumentsList = ({
+  documents,
+  loading,
+  onViewDocument
+}: {
+  documents: any[]
+  loading: boolean
+  onViewDocument: (doc: any) => void
+}) => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <LoadingState isLoading={true} message="Chargement des documents..." />
+      </div>
+    )
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+        <FileText className="h-10 w-10 mb-2 opacity-50" />
+        <p className="text-sm">Aucun document dans ce dossier</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {documents.map((doc) => (
+        <div
+          key={doc.id}
+          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+          onClick={() => onViewDocument(doc)}
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <FileText className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{doc.fileName || doc.title}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-gray-500">
+                  {doc.fileSize ? `${(doc.fileSize / 1024 / 1024).toFixed(1)} Mo` : 'N/A'}
+                </span>
+                {doc.category && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                    {doc.category}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <Eye className="h-4 w-4 text-gray-400 flex-shrink-0" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function RapportVerification({
+  dossierId,
+  onValidationComplete,
+  folderId,
+  onValidateRef,
+  onRejectRef,
+  canValidateRef
+}: RapportVerificationProps) {
   const [rapport, setRapport] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
   const { handleError } = useErrorHandler()
   const { isLoading, setLoading: setLoadingState } = useLoadingStates()
+  const { documents, loading: documentsLoading } = useFolderDocuments(folderId, dossierId)
+  const [showDocuments, setShowDocuments] = useState(true)
+  const [selectedDocument, setSelectedDocument] = useState<any>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   const loadRapport = React.useCallback(async () => {
     try {
       setLoading(true)
       setLoadingState('rapport', true)
-      
+
+      // Vérifier d'abord le statut du dossier
+      const dossierResponse = await fetch(`/api/dossiers/${dossierId}`, {
+        credentials: 'include'
+      })
+
+      if (dossierResponse.ok) {
+        const dossierData = await dossierResponse.json()
+        const dossier = dossierData.dossier
+
+        // Bloquer l'accès si le dossier n'est pas validé définitivement
+        if (dossier.statut !== 'VALIDÉ_DÉFINITIVEMENT' && dossier.statut !== 'TERMINÉ') {
+          handleError('Le rapport de vérification n\'est accessible qu\'après la validation définitive du dossier', 'validation')
+          return
+        }
+      }
+
       const response = await fetch(`/api/dossiers/${dossierId}/rapport-verification`, {
         credentials: 'include'
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setRapport(data.rapport)
@@ -61,6 +190,39 @@ export function RapportVerification({ dossierId, onValidationComplete }: Rapport
   React.useEffect(() => {
     loadRapport()
   }, [loadRapport])
+
+  const handleViewDocument = useCallback((doc: any) => {
+    setSelectedDocument(doc)
+    setPreviewOpen(true)
+  }, [])
+
+  const handleValidate = useCallback(() => {
+    onValidationComplete?.(true)
+  }, [onValidationComplete])
+
+  const handleReject = useCallback(() => {
+    onValidationComplete?.(false)
+  }, [onValidationComplete])
+
+  // Exposer les fonctions de validation au parent via refs
+  React.useEffect(() => {
+    if (onValidateRef) {
+      onValidateRef.current = handleValidate
+    }
+  }, [onValidateRef, handleValidate])
+
+  React.useEffect(() => {
+    if (onRejectRef) {
+      onRejectRef.current = handleReject
+    }
+  }, [onRejectRef, handleReject])
+
+  // Exposer la possibilité de valider au parent via ref
+  React.useEffect(() => {
+    if (canValidateRef && rapport) {
+      canValidateRef.current = rapport.incoherences.length === 0
+    }
+  }, [canValidateRef, rapport])
 
   const getSeveriteColor = (severite: string) => {
     switch (severite) {
@@ -100,7 +262,11 @@ export function RapportVerification({ dossierId, onValidationComplete }: Rapport
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="grid gap-4 md:grid-cols-2 h-[calc(100vh-12rem)]">
+          {/* Colonne gauche: Rapport */}
+          <div className="space-y-6 overflow-y-auto pr-2">
       {/* En-tête du rapport */}
       <Card>
         <CardHeader>
@@ -333,29 +499,52 @@ export function RapportVerification({ dossierId, onValidationComplete }: Rapport
         </CardContent>
       </Card>
 
-      {/* Actions */}
-      <div className="flex justify-between items-center">
-        <Button variant="outline" className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Exporter le rapport
-        </Button>
-        
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => onValidationComplete?.(false)}
-          >
-            Rejeter le dossier
-          </Button>
-          <Button 
-            className="bg-green-600 hover:bg-green-700"
-            onClick={() => onValidationComplete?.(true)}
-            disabled={rapport.incoherences.length > 0}
-          >
-            Valider définitivement
-          </Button>
+          </div>
+
+          {/* Colonne droite: Documents */}
+          <div className="overflow-y-auto pr-2">
+            <Card className="w-full h-full">
+              <CardHeader className="pb-4 sticky top-0 bg-white z-10">
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <FileText className="h-4 w-4" />
+                  <span>Documents du dossier</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {documentsLoading ? 'Chargement...' : `${documents.length} document${documents.length > 1 ? 's' : ''}`}
+                  {!folderId && (
+                    <span className="text-orange-500 ml-2">(via dossierId)</span>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!showDocuments ? (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    Documents masqués
+                  </div>
+                ) : (
+                  <DocumentsList
+                    documents={documents}
+                    loading={documentsLoading}
+                    onViewDocument={handleViewDocument}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de prévisualisation des documents */}
+      {selectedDocument && (
+        <DocumentPreviewModal
+          document={selectedDocument}
+          isOpen={previewOpen}
+          onClose={() => {
+            setPreviewOpen(false)
+            setSelectedDocument(null)
+          }}
+        />
+      )}
+    </>
   )
 }
