@@ -640,9 +640,25 @@ function ACDashboardContent() {
                                 Générer Quitus
                               </DropdownMenuItem>
                             )}
-                            
-                            {dossier.statut === 'VALIDÉ_ORDONNATEUR' && (
+
+                            {dossier.statut === 'TERMINÉ' && (
                               <>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleGenerateQuitus(dossier)
+                                }}>
+                                  <Award className="mr-2 h-5 w-5" />
+                                  Régénérer Quitus
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedDossier(dossier)
+                                  setRapportOpen(true)
+                                }}>
+                                  <ClipboardCheck className="mr-2 h-5 w-5" />
+                                  Voir le rapport de vérification
+                                </DropdownMenuItem>
                               </>
                             )}
                           </DropdownMenuContent>

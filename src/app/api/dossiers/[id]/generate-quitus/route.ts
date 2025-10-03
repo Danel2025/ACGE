@@ -104,10 +104,10 @@ export async function POST(
     // 🔍 Debug: Afficher les noms de colonnes disponibles
     console.log('🔍 Colonnes du dossier récupérées:', Object.keys(dossier))
 
-    // Vérifier que le dossier est validé définitivement
-    if (dossier.statut !== 'VALIDÉ_DÉFINITIVEMENT') {
+    // Vérifier que le dossier est validé définitivement ou terminé (pour régénération)
+    if (dossier.statut !== 'VALIDÉ_DÉFINITIVEMENT' && dossier.statut !== 'TERMINÉ') {
       return NextResponse.json(
-        { error: 'Seuls les dossiers validés définitivement peuvent générer un quitus' },
+        { error: 'Seuls les dossiers validés définitivement ou terminés peuvent générer un quitus' },
         { status: 400 }
       )
     }
@@ -258,26 +258,30 @@ export async function POST(
 
     console.log('✅ Quitus généré avec succès:', quitusData.numeroQuitus)
 
-    // 5. Mettre à jour le statut du dossier à TERMINÉ
-    console.log('🔄 Tentative de mise à jour du statut à TERMINÉ pour dossier:', dossierId)
+    // 5. Mettre à jour le statut du dossier à TERMINÉ (seulement si pas déjà terminé)
+    if (dossier.statut !== 'TERMINÉ') {
+      console.log('🔄 Tentative de mise à jour du statut à TERMINÉ pour dossier:', dossierId)
 
-    const { data: updateData, error: updateError } = await admin
-      .from('dossiers')
-      .update({
-        statut: 'TERMINÉ',
-        quitus_numero: numeroQuitus,
-        termine_le: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
-      .eq('id', dossierId)
-      .select()
+      const { data: updateData, error: updateError } = await admin
+        .from('dossiers')
+        .update({
+          statut: 'TERMINÉ',
+          quitus_numero: numeroQuitus,
+          termine_le: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        })
+        .eq('id', dossierId)
+        .select()
 
-    if (updateError) {
-      console.error('❌ Erreur mise à jour statut dossier:', updateError)
-      console.error('❌ Détails:', JSON.stringify(updateError, null, 2))
+      if (updateError) {
+        console.error('❌ Erreur mise à jour statut dossier:', updateError)
+        console.error('❌ Détails:', JSON.stringify(updateError, null, 2))
+      } else {
+        console.log('✅ Statut du dossier mis à jour : TERMINÉ')
+        console.log('✅ Données mises à jour:', updateData)
+      }
     } else {
-      console.log('✅ Statut du dossier mis à jour : TERMINÉ')
-      console.log('✅ Données mises à jour:', updateData)
+      console.log('ℹ️ Dossier déjà TERMINÉ, régénération du quitus uniquement')
     }
 
     // 6. Créer une notification pour toutes les parties prenantes
