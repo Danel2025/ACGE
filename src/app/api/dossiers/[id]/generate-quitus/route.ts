@@ -259,20 +259,25 @@ export async function POST(
     console.log('✅ Quitus généré avec succès:', quitusData.numeroQuitus)
 
     // 5. Mettre à jour le statut du dossier à TERMINÉ
-    const { error: updateError } = await admin
+    console.log('🔄 Tentative de mise à jour du statut à TERMINÉ pour dossier:', dossierId)
+
+    const { data: updateData, error: updateError } = await admin
       .from('dossiers')
       .update({
         statut: 'TERMINÉ',
         quitus_numero: numeroQuitus,
         termine_le: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       })
       .eq('id', dossierId)
+      .select()
 
     if (updateError) {
-      console.warn('⚠️ Erreur mise à jour statut dossier:', updateError)
+      console.error('❌ Erreur mise à jour statut dossier:', updateError)
+      console.error('❌ Détails:', JSON.stringify(updateError, null, 2))
     } else {
       console.log('✅ Statut du dossier mis à jour : TERMINÉ')
+      console.log('✅ Données mises à jour:', updateData)
     }
 
     // 6. Créer une notification pour toutes les parties prenantes
